@@ -38,6 +38,7 @@ class Site:
     def __init__(self, language=None):
         self.language = language or 'en'
         self.posts = []
+        self.pages = []
 
     def build(self, output_dir):
         """
@@ -48,6 +49,10 @@ class Site:
         for post in self.posts:
             html = template.render(site=self, article=post)
             write_html(output_dir, post.output_path, html)
+
+        for page in self.pages:
+            html = template.render(site=self, article=page)
+            write_html(output_dir, page.output_path, html)
 
         self._build_index(output_dir)
 
@@ -61,6 +66,12 @@ class Site:
             for f in filenames:
                 if os.path.splitext(f)[1].lower() in MARKDOWN_EXTENSIONS:
                     s.posts.append(Post.from_file(os.path.join(root, f)))
+
+        for root, _, filenames in os.walk(os.path.join(path, 'pages')):
+            for f in filenames:
+                if os.path.splitext(f)[1].lower() in MARKDOWN_EXTENSIONS:
+                    s.pages.append(Page.from_file(os.path.join(root, f)))
+
         return s
 
     def _build_index(self, output_dir):
@@ -130,6 +141,13 @@ class Article:
             path=path)
 
 
+class Page(Article):
+    """
+    Holds information about an individual page.
+    """
+    pass
+
+
 class Post(Article):
     """
     Holds information about an individual post.
@@ -150,5 +168,5 @@ def main():
         loader=PackageLoader('cacao', 'templates'),
         autoescape=select_autoescape(['html'])
     )
-    site = Site.from_folder('foo')
+    site = Site.from_folder('content')
     site.build('output')
