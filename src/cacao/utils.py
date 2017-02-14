@@ -14,3 +14,11 @@ def slugify(u):
     a = a.replace(' ', '-')            # spaces to hyphens
     a = re.sub(r'-+', '-', a)          # condense repeated hyphens
     return a
+
+
+def chunks(l, n):
+    """Yield successive n-sized chunks from l."""
+    # http://stackoverflow.com/a/312464/1558022
+    # Note: this only works if we know hte length of ``l``.
+    for i in range(0, len(l), n):
+        yield l[i:i + n]

@@ -6,21 +6,28 @@ import dateutil.parser as dp
 from jinja2 import Environment, PackageLoader, select_autoescape
 import markdown
 
-from .utils import slugify
+from .utils import chunks, slugify
 
 
 MARKDOWN_EXTENSIONS = ('.txt', '.md', '.mdown', '.markdown')
 
 
-def write_html(path, string):
+ENV = Environment(
+    loader=PackageLoader('cacao', 'templates'),
+    autoescape=select_autoescape(['html'])
+)
+
+
+def write_html(output_dir, slug, string):
     """
     Writes a string to a path in the output directory.
 
     This creates a directory with an ``index.html`` file, so you get
     pretty URLs without needing web server configuration.
     """
-    os.makedirs(os.path.join('output', path.lstrip('/')), exist_ok=True)
-    with open(os.path.join('output', path.lstrip('/'), 'index.html'), 'w') as f:
+    slug = slug.lstrip('/')
+    os.makedirs(os.path.join(output_dir, slug), exist_ok=True)
+    with open(os.path.join(output_dir, slug, 'index.html'), 'w') as f:
         f.write(string)
 
 
@@ -31,6 +38,18 @@ class Site:
     def __init__(self, language=None):
         self.language = language or 'en'
         self.posts = []
+
+    def build(self, output_dir):
+        """
+        Build the complete site and write it to the output folder.
+        """
+        template = ENV.get_template('article.html')
+        # TODO: Spot if we've written multiple items with the same slug
+        for post in self.posts:
+            html = template.render(site=self, article=post)
+            write_html(output_dir, post.output_path, html)
+
+        self._build_index(output_dir)
 
     @classmethod
     def from_folder(cls, path):
@@ -43,6 +62,18 @@ class Site:
                 if os.path.splitext(f)[1].lower() in MARKDOWN_EXTENSIONS:
                     s.posts.append(Post.from_file(os.path.join(root, f)))
         return s
+
+    def _build_index(self, output_dir):
+        # TODO: Make this more generic
+        # TODO: Make pagination size a setting
+        template = ENV.get_template('index.html')
+        posts = sorted(self.posts, key=lambda x: x.date, reverse=True)
+        for i, p in enumerate(chunks(posts, 10), start=1):
+            html = template.render(site=self, articles=p)
+            if i == 1:
+                write_html(output_dir, '/', html)
+            else:
+                write_html(output_dir, '/page/%d' % i, html)
 
 
 class Article:
@@ -119,8 +150,5 @@ def main():
         loader=PackageLoader('cacao', 'templates'),
         autoescape=select_autoescape(['html'])
     )
-    site = Site.from_folder('content')
-    for i, post in enumerate(site.posts):
-        template = env.get_template('article.html')
-        html = template.render(site=site, article=post)
-        write_html(post.output_path, html)
+    site = Site.from_folder('foo')
+    site.build('output')
