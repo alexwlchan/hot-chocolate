@@ -9,6 +9,18 @@ import markdown
 MARKDOWN_EXTENSIONS = ('.txt', '.md', '.mdown', '.markdown')
 
 
+def write_html(path, string):
+    """
+    Writes a string to a path in the output directory.
+
+    This creates a directory with an ``index.html`` file, so you get
+    pretty URLs without needing web server configuration.
+    """
+    os.makedirs(os.path.join('output', path.lstrip('/')), exist_ok=True)
+    with open(os.path.join('output', path.lstrip('/'), 'index.html'), 'w') as f:
+        f.write(string)
+
+
 class Site:
     """
     Holds the settings for an individual site.
@@ -60,5 +72,5 @@ def main():
     site = Site.from_folder('content')
     for i, post in enumerate(site.posts):
         template = env.get_template('article.html')
-        with open('example_%d.html' % i, 'w') as f:
-            f.write(template.render(site=site, article=post))
+        html = template.render(site=site, article=post)
+        write_html('/example_%d' % i, html)
