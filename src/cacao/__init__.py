@@ -5,6 +5,8 @@ import os
 from jinja2 import Environment, PackageLoader, select_autoescape
 import markdown
 
+from .utils import slugify
+
 
 MARKDOWN_EXTENSIONS = ('.txt', '.md', '.mdown', '.markdown')
 
@@ -46,20 +48,49 @@ class Article:
     """
     Holds information about an individual article (a page or a post).
     """
-    def __init__(self, content, path=None):
+    def __init__(self, content, metadata, path):
         self.content = content
+        self.metadata = metadata
         self.path=path
+
+        # TODO: better error handling
+        self.title = metadata.pop('title')
+        self.slug = metadata.get('slug')
+        self.metadata = metadata
 
     def __repr__(self):
         return '<%s path=%r>' % (type(self).__name__, self.path)
+
+    @property
+    def slug(self):
+        if self._slug is None:
+            self._slug = slugify(self.title)
+        return self._slug
+
+    @slug.setter
+    def slug(self, value):
+        self._slug = value
 
     @classmethod
     def from_file(cls, path):
         """
         Construct an ``Article`` instance from a file on disk.
         """
+        file_contents = open(path).read()
+
+        # Metadata is separated from the rest of the content by an empty line.
+        # TODO: Make this robust to trailing whitespace.
+        metadata_str, content = file_contents.split('\n\n', 1)
+
+        # TODO: Handle quoted strings?  Lists?
+        metadata = {}
+        for line in metadata_str.splitlines():
+            key, value = line.split(':', 1)
+            metadata[key.strip()] = value.strip()
+
         return cls(
-            content=markdown.markdown(open(path).read()),
+            content=markdown.markdown(content),
+            metadata=metadata,
             path=path)
 
 
@@ -73,4 +104,4 @@ def main():
     for i, post in enumerate(site.posts):
         template = env.get_template('article.html')
         html = template.render(site=site, article=post)
-        write_html('/example_%d' % i, html)
+        write_html(post.slug, html)

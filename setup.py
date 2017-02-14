@@ -40,6 +40,7 @@ setup(
     install_requires=[
         'Jinja2>=2.9.5,<3',
         'Markdown>=2.6.8,<3',
+        'unidecode>=0.04.20,<0.05',
     ],
     entry_points={
         'console_scripts': [
