@@ -1,0 +1,18 @@
+language: python
+sudo: false
+
+cache:
+  directories:
+    - $HOME/.cache/pip
+
+matrix:
+  include:
+    - python: "3.6"
+      env: TOXENV=lint
+
+install:
+  - "pip install -U pip setuptools"
+  - "pip install -U tox"
+
+script:
+  - "tox"

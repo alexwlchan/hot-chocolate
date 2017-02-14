@@ -21,7 +21,7 @@ setup(
     version='0.1.0',
     description='A Markdown-based static site generator',
     long_description=long_description,
-    url='https://github.com/alexwlchan/cacao',
+    url='https://github.com/alexwlchan/hot-chocolate',
     author='Alex Chan',
     author_email='alex@alexwlchan.net',
     license='MIT',
