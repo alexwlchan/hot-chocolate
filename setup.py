@@ -38,6 +38,7 @@ setup(
     packages=find_packages(SOURCE),
     package_dir={'': SOURCE},
     install_requires=[
+        'python-dateutil>=2.6.0,<3',
         'Jinja2>=2.9.5,<3',
         'Markdown>=2.6.8,<3',
         'unidecode>=0.04.20,<0.05',

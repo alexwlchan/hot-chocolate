@@ -2,6 +2,7 @@
 
 import os
 
+import dateutil.parser as dp
 from jinja2 import Environment, PackageLoader, select_autoescape
 import markdown
 
@@ -40,7 +41,7 @@ class Site:
         for root, _, filenames in os.walk(os.path.join(path, 'posts')):
             for f in filenames:
                 if os.path.splitext(f)[1].lower() in MARKDOWN_EXTENSIONS:
-                    s.posts.append(Article.from_file(os.path.join(root, f)))
+                    s.posts.append(Post.from_file(os.path.join(root, f)))
         return s
 
 
@@ -71,6 +72,10 @@ class Article:
     def slug(self, value):
         self._slug = value
 
+    @property
+    def output_path(self):
+        return self.slug
+
     @classmethod
     def from_file(cls, path):
         """
@@ -94,6 +99,20 @@ class Article:
             path=path)
 
 
+class Post(Article):
+    """
+    Holds information about an individual post.
+    """
+    def __init__(self, content, metadata, path):
+        # TODO: Error handling
+        self.date = dp.parse(metadata.pop('date'))
+        super().__init__(content, metadata, path)
+
+    @property
+    def output_path(self):
+        return self.date.strftime('%Y/%m/') + self.slug
+
+
 def main():
     print('Welcome to Cacao!')
     env = Environment(
@@ -104,4 +123,4 @@ def main():
     for i, post in enumerate(site.posts):
         template = env.get_template('article.html')
         html = template.render(site=site, article=post)
-        write_html(post.slug, html)
+        write_html(post.output_path, html)
