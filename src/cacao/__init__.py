@@ -1,5 +1,6 @@
 # -*- encoding: utf-8
 
+import collections
 import os
 
 import dateutil.parser as dp
@@ -54,7 +55,8 @@ class Site:
             html = template.render(site=self, article=page)
             write_html(output_dir, page.output_path, html)
 
-        self._build_index(output_dir)
+        self._build_index(output_dir=output_dir)
+        self._build_tag_indices(output_dir=output_dir)
 
     @classmethod
     def from_folder(cls, path):
@@ -74,17 +76,37 @@ class Site:
 
         return s
 
-    def _build_index(self, output_dir):
+    def _build_index(self, output_dir, posts=None, prefix=''):
         # TODO: Make this more generic
         # TODO: Make pagination size a setting
         template = ENV.get_template('index.html')
-        posts = sorted(self.posts, key=lambda x: x.date, reverse=True)
-        for i, p in enumerate(chunks(posts, 10), start=1):
+
+        if posts is None:
+            posts = self.posts
+
+        posts = sorted(posts, key=lambda x: x.date, reverse=True)
+        for pageno, p in enumerate(chunks(posts, 5), start=1):
             html = template.render(site=self, articles=p)
-            if i == 1:
-                write_html(output_dir, '/', html)
+
+            if pageno == 1:
+                slug = '/%s/' % prefix
             else:
-                write_html(output_dir, '/page/%d' % i, html)
+                if prefix:
+                    slug = '/%s/%d' % (prefix, pageno)
+                else:
+                    slug = '/page/%d' % pageno
+            write_html(output_dir, slug, html)
+
+    def _build_tag_indices(self, output_dir):
+        tags = collections.defaultdict(list)
+        for p in self.posts:
+            for t in p.tags:
+                tags[t].append(p)
+        for t, posts in tags.items():
+            self._build_index(
+                output_dir=output_dir,
+                posts=posts,
+                prefix='/tag/%s' % t)
 
 
 class Article:
@@ -99,6 +121,12 @@ class Article:
         # TODO: better error handling
         self.title = metadata.pop('title')
         self.slug = metadata.get('slug')
+
+        try:
+            self.tags = [t.strip() for t in metadata.pop('tags').split(',')]
+        except KeyError:
+            self.tags = []
+
         self.metadata = metadata
 
     def __repr__(self):
