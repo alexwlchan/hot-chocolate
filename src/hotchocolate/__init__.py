@@ -14,7 +14,7 @@ MARKDOWN_EXTENSIONS = ('.txt', '.md', '.mdown', '.markdown')
 
 
 ENV = Environment(
-    loader=PackageLoader('cacao', 'templates'),
+    loader=PackageLoader('hotchocolate', 'templates'),
     autoescape=select_autoescape(['html'])
 )
 
@@ -192,9 +192,5 @@ class Post(Article):
 
 def main():
     print('Welcome to Cacao!')
-    env = Environment(
-        loader=PackageLoader('cacao', 'templates'),
-        autoescape=select_autoescape(['html'])
-    )
     site = Site.from_folder('content')
     site.build('output')

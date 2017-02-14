@@ -17,7 +17,7 @@ long_description = codecs.open(README, encoding='utf-8').read()
 
 
 setup(
-    name='cacao',
+    name='hotchocolate',
     version='0.1.0',
     description='A Markdown-based static site generator',
     long_description=long_description,
@@ -45,7 +45,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'cacao=cacao:main',
+            'cocoa=hotchocolate:main',
         ],
     },
 )
