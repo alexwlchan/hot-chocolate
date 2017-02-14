@@ -116,7 +116,7 @@ class Article:
     def __init__(self, content, metadata, path):
         self.content = content
         self.metadata = metadata
-        self.path=path
+        self.path = path
 
         # TODO: better error handling
         self.title = metadata.pop('title')
