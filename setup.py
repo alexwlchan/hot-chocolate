@@ -37,7 +37,10 @@ setup(
     ],
     packages=find_packages(SOURCE),
     package_dir={'': SOURCE},
-    install_requires=[],
+    install_requires=[
+        'Jinja2>=2.9.5,<3',
+        'Markdown>=2.6.8,<3',
+    ],
     entry_points={
         'console_scripts': [
             'cacao=cacao:main',
