@@ -21,7 +21,7 @@ def build():
     Take the content folder and build it.
     """
     site = Site.from_folder('content')
-    site.build('output')
+    site.build()
 
 
 @cli.command('clean', help='remove the generated HTML')
@@ -41,7 +41,7 @@ def serve():
     Start a server on port 8900.
     """
     site = Site.from_folder('content')
-    site.build('output')
+    site.build()
 
     os.chdir('output')
     if shutil.which('docker'):
@@ -75,4 +75,4 @@ def publish():
             os.unlink(path)
 
     site = Site.from_folder('content')
-    site.build('output')
+    site.build()
