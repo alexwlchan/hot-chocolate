@@ -46,7 +46,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'cocoa=hotchocolate:cli',
+            'cocoa=hotchocolate.cli:cli',
         ],
     },
 )

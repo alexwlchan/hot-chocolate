@@ -188,22 +188,3 @@ class Post(Article):
     @property
     def output_path(self):
         return self.date.strftime('%Y/%m/') + self.slug
-
-
-import click
-
-
-@click.group()
-def cli():
-    pass
-
-
-@cli.command('clean', help='remove the generated HTML')
-def clean():
-    print('clean')
-
-
-@cli.command('build', help='(re)build the HTML for the website')
-def build():
-    site = Site.from_folder('content')
-    site.build('output')
