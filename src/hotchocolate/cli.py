@@ -36,29 +36,44 @@ def clean():
 
 
 @cli.command('serve', help='serve the generated website on a local port')
-def serve():
+@click.option('--port', default=9000, help='port for the web server',
+              type=click.IntRange(1024, 65535))
+def serve(port):
     """
-    Start a server on port 8900.
+    Start a local web server for the site.
     """
     site = Site.from_folder('content')
     site.build()
+    out_path = os.path.abspath(site.out_path)
 
-    os.chdir('output')
-    if shutil.which('docker'):
-        # TODO: Don't error if the container is already running
-        # TODO: Let the user choose what port to use
+    if not shutil.which('docker'):
+        sys.exit('Unable to find Docker; please ensure Docker is installed '
+                 'and in the PATH.')
+
+    cmd = [
+        # Run the container in the background
+        'docker', 'run', '--detach',
+
+        # Share the container port with the host
+        '--publish', '%d:80' % port,
+
+        # Share the output directory into the container
+        '--volume', '%s:/usr/local/apache2/htdocs' % out_path,
+
+        # Use the Apache container
+        'httpd'
+    ]
+    try:
         subprocess.check_call(
-            ['docker', 'run', '-d', '-p', '8900:80',
-             '-v', '%s:/usr/local/apache2/htdocs' % os.path.abspath(os.curdir),
-             'httpd'],
+            cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
-    else:
-        # TODO: Add support for a server with http.server
-        print('Running the local web server requires Docker')
-        sys.exit(1)
-    print('Web server runnning on http://localhost:8900/')
+    except subprocess.CalledProcessError:
+        sys.exit('Error starting the container - is a container already '
+                 'running on this port?')
+
+    print('Web server running on http://localhost:%d/' % port)
 
 
 @cli.command('publish', help='build the HTML for publication')
