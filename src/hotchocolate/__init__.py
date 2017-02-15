@@ -188,9 +188,3 @@ class Post(Article):
     @property
     def output_path(self):
         return self.date.strftime('%Y/%m/') + self.slug
-
-
-def main():
-    print('Welcome to Cacao!')
-    site = Site.from_folder('content')
-    site.build('output')

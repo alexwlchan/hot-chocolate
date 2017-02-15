@@ -38,6 +38,7 @@ setup(
     packages=find_packages(SOURCE),
     package_dir={'': SOURCE},
     install_requires=[
+        'click>=6.7,<7',
         'python-dateutil>=2.6.0,<3',
         'Jinja2>=2.9.5,<3',
         'Markdown>=2.6.8,<3',
@@ -45,7 +46,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'cocoa=hotchocolate:main',
+            'cocoa=hotchocolate.cli:cli',
         ],
     },
 )
