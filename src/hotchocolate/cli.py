@@ -60,8 +60,7 @@ def serve(port):
         client.containers.run(
             image='httpd',
             detach=True,
-            ports={port: 80},
-            read_only=True,
+            ports={80: port},
             volumes={
                 os.path.abspath(site.out_path): {
                     'bind': '/usr/local/apache2/htdocs',
