@@ -2,10 +2,11 @@
 
 import os
 import shutil
-import subprocess
 import sys
 
 import click
+import docker
+import requests
 
 from . import Site
 
@@ -36,29 +37,42 @@ def clean():
 
 
 @cli.command('serve', help='serve the generated website on a local port')
-def serve():
+@click.option('--port', default=9000, help='port for the web server',
+              type=click.IntRange(1024, 65535))
+def serve(port):
     """
-    Start a server on port 8900.
+    Start a local web server for the site.
     """
     site = Site.from_folder('content')
     site.build()
 
-    os.chdir('output')
-    if shutil.which('docker'):
-        # TODO: Don't error if the container is already running
-        # TODO: Let the user choose what port to use
-        subprocess.check_call(
-            ['docker', 'run', '-d', '-p', '8900:80',
-             '-v', '%s:/usr/local/apache2/htdocs' % os.path.abspath(os.curdir),
-             'httpd'],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
+    # Set up the Docker API
+    client = docker.from_env()
+
+    # Check that Docker is available
+    try:
+        client.info()
+    except requests.exceptions.ConnectionError:
+        sys.exit('Unable to connect to Docker.')
+
+    # Start the container
+    try:
+        client.containers.run(
+            image='httpd',
+            detach=True,
+            ports={port: 80},
+            read_only=True,
+            volumes={
+                os.path.abspath(site.out_path): {
+                    'bind': '/usr/local/apache2/htdocs',
+                    'mode': 'ro',
+                },
+            },
         )
-    else:
-        # TODO: Add support for a server with http.server
-        print('Running the local web server requires Docker')
-        sys.exit(1)
-    print('Web server runnning on http://localhost:8900/')
+    except docker.errors.APIError as err:
+        sys.exit('Error starting the Docker container:\n%s' % err)
+
+    print('Web server running on http://localhost:%d/' % port)
 
 
 @cli.command('publish', help='build the HTML for publication')
