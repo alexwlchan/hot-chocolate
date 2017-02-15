@@ -1,0 +1,9 @@
+<h1>{{ article.title }}</h1>
+
+<h2>{{ article.date }}</h2>
+
+{% if article.tags|length > 0 %}
+<h2>Tagged with: {% for tag in article.tags|sort %}{{ tag }}, {% endfor %}</h2>
+{% endif %}
+
+{{ article.content|safe }}
