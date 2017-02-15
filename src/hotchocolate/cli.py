@@ -46,7 +46,6 @@ def serve(port):
     """
     site = Site.from_folder('content')
     site.build()
-    out_path = os.path.abspath(site.out_path)
 
     # Set up the Docker API
     client = docker.from_env()
@@ -57,7 +56,7 @@ def serve(port):
     except requests.exceptions.ConnectionError:
         sys.exit('Unable to connect to Docker.')
 
-    #
+    # Start the container
     try:
         client.containers.run(
             image='httpd',
