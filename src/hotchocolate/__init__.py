@@ -190,7 +190,20 @@ class Post(Article):
         return self.date.strftime('%Y/%m/') + self.slug
 
 
-def main():
-    print('Welcome to Cacao!')
+import click
+
+
+@click.group()
+def cli():
+    pass
+
+
+@cli.command('clean', help='remove the generated HTML')
+def clean():
+    print('clean')
+
+
+@cli.command('build', help='(re)build the HTML for the website')
+def build():
     site = Site.from_folder('content')
     site.build('output')
