@@ -7,7 +7,7 @@ import dateutil.parser as dp
 from jinja2 import Environment, PackageLoader, select_autoescape
 import markdown
 
-from .utils import chunks, slugify
+from .utils import chunks, lazy_copyfile, slugify
 
 
 MARKDOWN_EXTENSIONS = ('.txt', '.md', '.mdown', '.markdown')
@@ -36,7 +36,8 @@ class Site:
     """
     Holds the settings for an individual site.
     """
-    def __init__(self, language=None):
+    def __init__(self, path, language=None):
+        self.path = path
         self.language = language or 'en'
         self.posts = []
         self.pages = []
@@ -57,13 +58,14 @@ class Site:
 
         self._build_index(output_dir=output_dir)
         self._build_tag_indices(output_dir=output_dir)
+        self._copy_static_files(output_dir=output_dir)
 
     @classmethod
     def from_folder(cls, path):
         """
         Construct a ``Site`` instance from a folder on disk.
         """
-        s = cls()
+        s = cls(path=path)
         for root, _, filenames in os.walk(os.path.join(path, 'posts')):
             for f in filenames:
                 if os.path.splitext(f)[1].lower() in MARKDOWN_EXTENSIONS:
@@ -107,6 +109,18 @@ class Site:
                 output_dir=output_dir,
                 posts=posts,
                 prefix='/tag/%s' % t)
+
+    def _copy_static_files(self, output_dir):
+        for root, _, filenames in os.walk(os.path.join(self.path, 'static')):
+            for f in filenames:
+                if f.startswith('.'):
+                    continue
+                base = os.path.join(root, f).replace(
+                    self.path + '/static/', '')
+                lazy_copyfile(
+                    src=os.path.join(self.path, 'static', base),
+                    dst=os.path.join(output_dir, base),
+                )
 
 
 class Article:

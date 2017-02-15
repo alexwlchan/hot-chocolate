@@ -1,6 +1,9 @@
 # -*- encoding: utf-8
 
+import filecmp
+import os
 import re
+import shutil
 
 from unidecode import unidecode
 
@@ -22,3 +25,22 @@ def chunks(l, n):
     # Note: this only works if we know hte length of ``l``.
     for i in range(0, len(l), n):
         yield l[i:i + n]
+
+
+def lazy_copyfile(src, dst):
+    """
+    Copy a file from ``src`` to ``dst``, but only if the files are different.
+
+    Avoids thrashing the disk unnecessarily on repeated site builds.
+    """
+    print(src)
+    assert os.path.exists(src)
+    if os.path.exists(dst):
+        if os.path.getmtime(dst) >= os.path.getmtime(src):
+            return
+        elif filecmp.cmp(src, dst):
+            return
+    os.makedirs(os.path.dirname(dst), exist_ok=True)
+    shutil.copyfile(src, dst)
+
+
