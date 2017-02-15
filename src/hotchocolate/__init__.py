@@ -7,7 +7,7 @@ import dateutil.parser as dp
 from jinja2 import Environment, PackageLoader, select_autoescape
 import markdown
 
-from .utils import chunks, slugify
+from .utils import chunks, lazy_copyfile, slugify
 
 
 MARKDOWN_EXTENSIONS = ('.txt', '.md', '.mdown', '.markdown')
@@ -36,12 +36,14 @@ class Site:
     """
     Holds the settings for an individual site.
     """
-    def __init__(self, language=None):
+    def __init__(self, path, out_path, language=None):
+        self.path = path
+        self.out_path = out_path
         self.language = language or 'en'
         self.posts = []
         self.pages = []
 
-    def build(self, output_dir):
+    def build(self):
         """
         Build the complete site and write it to the output folder.
         """
@@ -49,21 +51,22 @@ class Site:
         # TODO: Spot if we've written multiple items with the same slug
         for post in self.posts:
             html = template.render(site=self, article=post)
-            write_html(output_dir, post.output_path, html)
+            write_html(self.out_path, post.out_path, html)
 
         for page in self.pages:
             html = template.render(site=self, article=page)
-            write_html(output_dir, page.output_path, html)
+            write_html(self.out_path, page.out_path, html)
 
-        self._build_index(output_dir=output_dir)
-        self._build_tag_indices(output_dir=output_dir)
+        self._build_index()
+        self._build_tag_indices()
+        self._copy_static_files()
 
     @classmethod
     def from_folder(cls, path):
         """
         Construct a ``Site`` instance from a folder on disk.
         """
-        s = cls()
+        s = cls(path=path, out_path='output')
         for root, _, filenames in os.walk(os.path.join(path, 'posts')):
             for f in filenames:
                 if os.path.splitext(f)[1].lower() in MARKDOWN_EXTENSIONS:
@@ -76,7 +79,7 @@ class Site:
 
         return s
 
-    def _build_index(self, output_dir, posts=None, prefix=''):
+    def _build_index(self, posts=None, prefix=''):
         # TODO: Make this more generic
         # TODO: Make pagination size a setting
         template = ENV.get_template('index.html')
@@ -95,18 +98,29 @@ class Site:
                     slug = '/%s/%d' % (prefix, pageno)
                 else:
                     slug = '/page/%d' % pageno
-            write_html(output_dir, slug, html)
+            write_html(self.out_path, slug, html)
 
-    def _build_tag_indices(self, output_dir):
+    def _build_tag_indices(self):
         tags = collections.defaultdict(list)
         for p in self.posts:
             for t in p.tags:
                 tags[t].append(p)
         for t, posts in tags.items():
             self._build_index(
-                output_dir=output_dir,
                 posts=posts,
                 prefix='/tag/%s' % t)
+
+    def _copy_static_files(self):
+        for root, _, filenames in os.walk(os.path.join(self.path, 'static')):
+            for f in filenames:
+                if f.startswith('.'):
+                    continue
+                base = os.path.join(root, f).replace(
+                    self.path + '/static/', '')
+                lazy_copyfile(
+                    src=os.path.join(self.path, 'static', base),
+                    dst=os.path.join(self.out_path, base),
+                )
 
 
 class Article:
@@ -143,7 +157,7 @@ class Article:
         self._slug = value
 
     @property
-    def output_path(self):
+    def out_path(self):
         return self.slug
 
     @classmethod
@@ -186,5 +200,5 @@ class Post(Article):
         super().__init__(content, metadata, path)
 
     @property
-    def output_path(self):
+    def out_path(self):
         return self.date.strftime('%Y/%m/') + self.slug
