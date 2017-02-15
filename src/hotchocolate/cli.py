@@ -6,6 +6,8 @@ import subprocess
 import sys
 
 import click
+import docker
+import requests
 
 from . import Site
 
@@ -46,32 +48,31 @@ def serve(port):
     site.build()
     out_path = os.path.abspath(site.out_path)
 
-    if not shutil.which('docker'):
-        sys.exit('Unable to find Docker; please ensure Docker is installed '
-                 'and in the PATH.')
+    # Set up the Docker API
+    client = docker.from_env()
 
-    cmd = [
-        # Run the container in the background
-        'docker', 'run', '--detach',
-
-        # Share the container port with the host
-        '--publish', '%d:80' % port,
-
-        # Share the output directory into the container
-        '--volume', '%s:/usr/local/apache2/htdocs' % out_path,
-
-        # Use the Apache container
-        'httpd'
-    ]
+    # Check that Docker is available
     try:
-        subprocess.check_call(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
+        client.info()
+    except requests.exceptions.ConnectionError:
+        sys.exit('Unable to connect to Docker.')
+
+    #
+    try:
+        client.containers.run(
+            image='httpd',
+            detach=True,
+            ports={port: 80},
+            read_only=True,
+            volumes={
+                os.path.abspath(site.out_path): {
+                    'bind': '/usr/local/apache2/htdocs',
+                    'mode': 'ro',
+                },
+            },
         )
-    except subprocess.CalledProcessError:
-        sys.exit('Error starting the container - is a container already '
-                 'running on this port?')
+    except docker.errors.APIError as err:
+        sys.exit('Error starting the Docker container:\n%s' % err)
 
     print('Web server running on http://localhost:%d/' % port)
 
