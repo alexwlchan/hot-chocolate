@@ -13,10 +13,25 @@ from .utils import chunks, lazy_copyfile, slugify
 MARKDOWN_EXTENSIONS = ('.txt', '.md', '.mdown', '.markdown')
 
 
-ENV = Environment(
-    loader=PackageLoader('hotchocolate', 'templates'),
-    autoescape=select_autoescape(['html'])
-)
+class CocoaEnvironment(object):
+    """
+    Wrapper for ``jinja2.Environment`` that allows the user to override
+    templates with files in a local directory.
+    """
+    def __init__(self, path):
+        self.path = path
+        self.env = Environment(
+            loader=PackageLoader('hotchocolate', 'templates'),
+            autoescape=select_autoescape(['html'])
+        )
+
+    def get_template(self, name):
+        try:
+            return Environment.from_string(
+                open(os.path.join(self.path, 'templates', name)).read()
+            )
+        except FileNotFoundError:
+            return self.env.get_template(name)
 
 
 def write_html(output_dir, slug, string):
@@ -42,12 +57,13 @@ class Site:
         self.language = language or 'en'
         self.posts = []
         self.pages = []
+        self.env = CocoaEnvironment(path)
 
     def build(self):
         """
         Build the complete site and write it to the output folder.
         """
-        template = ENV.get_template('article.html')
+        template = self.env.get_template('article.html')
         # TODO: Spot if we've written multiple items with the same slug
         for post in self.posts:
             html = template.render(site=self, article=post)
@@ -82,7 +98,7 @@ class Site:
     def _build_index(self, posts=None, prefix=''):
         # TODO: Make this more generic
         # TODO: Make pagination size a setting
-        template = ENV.get_template('index.html')
+        template = self.env.get_template('index.html')
 
         if posts is None:
             posts = self.posts
