@@ -46,6 +46,7 @@ def serve():
     os.chdir('output')
     if shutil.which('docker'):
         # TODO: Don't error if the container is already running
+        # TODO: Let the user choose what port to use
         subprocess.check_call(
             ['docker', 'run', '-d', '-p', '8900:80',
              '-v', '%s:/usr/local/apache2/htdocs' % os.path.abspath(os.curdir),
@@ -54,6 +55,7 @@ def serve():
             stderr=subprocess.PIPE
         )
     else:
+        # TODO: Add support for a server with http.server
         print('Running the local web server requires Docker')
         sys.exit(1)
     print('Web server runnning on http://localhost:8900/')
