@@ -33,7 +33,6 @@ def lazy_copyfile(src, dst):
 
     Avoids thrashing the disk unnecessarily on repeated site builds.
     """
-    print(src)
     assert os.path.exists(src)
     if os.path.exists(dst):
         if os.path.getmtime(dst) >= os.path.getmtime(src):
@@ -42,5 +41,3 @@ def lazy_copyfile(src, dst):
             return
     os.makedirs(os.path.dirname(dst), exist_ok=True)
     shutil.copyfile(src, dst)
-
-
