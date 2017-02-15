@@ -2,9 +2,11 @@
 
 import collections
 import os
+import tempfile
 
 import dateutil.parser as dp
-from jinja2 import Environment, PackageLoader, select_autoescape
+from jinja2 import (
+    Environment, FileSystemLoader, PackageLoader, select_autoescape)
 import markdown
 
 from .utils import chunks, lazy_copyfile, slugify
@@ -19,19 +21,54 @@ class CocoaEnvironment(object):
     templates with files in a local directory.
     """
     def __init__(self, path):
-        self.path = path
-        self.env = Environment(
-            loader=PackageLoader('hotchocolate', 'templates'),
-            autoescape=select_autoescape(['html'])
-        )
+        self.workdir = tempfile.mkdtemp(prefix='cocoa_templates_')
 
-    def get_template(self, name):
+        # Drop in any templates from the local directory.  Because we need
+        # to cope with relative imports and the like, we just copy them
+        # all to a temporary directory and work from there.
         try:
-            return Environment.from_string(
-                open(os.path.join(self.path, 'templates', name)).read()
-            )
+            for tmpl in os.listdir(os.path.join(path, 'templates')):
+                if os.path.basename(tmpl).startswith('.'):
+                    continue
+                os.link(
+                    src=os.path.abspath(tmpl),
+                    dst=os.path.join(self.workdir, os.path.basename(tmpl))
+                )
+
+            if os.listdir(self.workdir) == []:
+                raise FileNotFoundError('No custom templates')
+
+        # If there aren't any custom templates, just use them directly
+        # from the package itself.
         except FileNotFoundError:
-            return self.env.get_template(name)
+            self.env = Environment(
+                loader=PackageLoader('hotchocolate', 'templates'),
+                autoescape=select_autoescape(['html'])
+            )
+
+        # Otherwise, copy across the templates from the package
+        # directory and then use a FileSystemLoader.
+        else:
+            package_dir = os.path.join(os.path.dirname(__file__), 'templates')
+            print(self.workdir)
+            for tmpl in os.listdir(package_dir):
+                name = os.path.basename(tmpl)
+                if name.startswith('.'):
+                    continue
+                try:
+                    os.link(
+                        src=os.path.abspath(tmpl),
+                        dst=os.path.join(self.workdir, name)
+                    )
+                except FileExistsError:
+                    pass
+            self.env = Environment(
+                loader=FileSystemLoader(self.workdir),
+                autoescape=select_autoescape(['html'])
+            )
+
+    def get_template(self, *args, **kwargs):
+        return self.env.get_template(*args, **kwargs)
 
 
 def write_html(output_dir, slug, string):
