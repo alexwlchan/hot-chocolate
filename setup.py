@@ -39,6 +39,7 @@ setup(
     package_dir={'': SOURCE},
     install_requires=[
         'click>=6.7,<7',
+        'csscompressor>=0.9.4,<1',
         'docker>=2.0.2,<3',
         'python-dateutil>=2.6.0,<3',
         'Jinja2>=2.9.5,<3',

@@ -2,65 +2,16 @@
 
 import collections
 import os
-import re
-import warnings
 
 import dateutil.parser as dp
 import markdown
-import mincss.processor as mp
-import requests
-import scss
 
+from .css import CSSProcessor
 from .utils import chunks, lazy_copyfile, slugify
 from .writers import CocoaEnvironment
 
 
 MARKDOWN_EXTENSIONS = ('.txt', '.md', '.mdown', '.markdown')
-
-
-def get_consolidated_css(css_str):
-    """
-    Try to get a consolidated CSS string using http://www.codebeautifier.com/.
-
-    If this fails it's not a disaster, we just might have slightly more
-    inefficient CSS strings, so we only warn on exceptions.
-    """
-    try:
-        r = requests.post(
-            'http://www.codebeautifier.com/',
-            data={'css_text': css_str}
-        )
-        encoded_css = r.text.split('<code id="code">')[1].split('</code>')[0]
-        return re.sub(r'<[^>]+>', r'', encoded_css)
-    except Exception as exc:
-        warnings.warn(err)
-        return css_str
-
-
-class CSSProcessor(mp.Processor):
-    """
-    A wrapper around ``mincss.Processor`` that's designed to do in-memory
-    stripping of unused/duplicate CSS rules, minify the result and return
-    the final HTML string.
-    """
-
-    def download(self, url):
-        return url
-
-    def minify_css(self, html_str, css_str):
-        # This step removes any CSS selectors that aren't used in the
-        # provided HTML
-        self.inlines = []
-        self.process(html_str.replace(
-            '<!-- hc_css_include -->', '<style>%s</style>' % css_str
-        ))
-        css_str = self.inlines[0].after
-
-        # TODO: What if this is super big?  You don't want to inline it,
-        # drop it in a file instead.
-        return html_str.replace(
-            '<!-- hc_css_include -->', '<style>%s</style>' % css_str
-        )
 
 
 class Site:
@@ -79,8 +30,9 @@ class Site:
         self.posts = []
         self.pages = []
         self.env = CocoaEnvironment(path)
+        self.css_proc = CSSProcessor(path)
 
-    def write_html(self, slug, string):
+    def write_html(self, slug, html_str):
         """
         Writes a string to a path in the output directory.
 
@@ -90,12 +42,7 @@ class Site:
         slug = slug.lstrip('/')
         os.makedirs(os.path.join(self.out_path, slug), exist_ok=True)
 
-        # Substitute the CSS declaration into the string.  We drop in
-        # the complete CSS declaration, then use mincss to work out what
-        # the minimal covering set is, and just use that.
-        # TODO: Cache the CSSProcessor?
-        p = CSSProcessor()
-        html_str = p.minify_css(string, self._css)
+        html_str = self.css_proc.insert_css_for_page(html_str)
 
         with open(os.path.join(self.out_path, slug, 'index.html'), 'w') as f:
             f.write(html_str)
@@ -104,8 +51,6 @@ class Site:
         """
         Build the complete site and write it to the output folder.
         """
-        self._compile_scss()
-
         template = self.env.get_template('article.html')
         # TODO: Spot if we've written multiple items with the same slug
         for post in self.posts:
@@ -137,23 +82,6 @@ class Site:
                     s.pages.append(Page.from_file(os.path.join(root, f)))
 
         return s
-
-    def _compile_scss(self):
-        if not hasattr(self, '_css'):
-            compiler = scss.Compiler()
-            # TODO: Minification
-            self._css = compiler.compile(
-                os.path.join(os.path.dirname(__file__), 'style', 'main.scss')
-            )
-
-            try:
-                self._css += compiler.compile(
-                    os.path.join(self.path, 'style', 'custom.scss')
-                )
-            except FileNotFoundError:
-                pass
-
-            self._css = get_consolidated_css(self._css)
 
     def _build_index(self, posts=None, prefix=''):
         # TODO: Make this more generic
