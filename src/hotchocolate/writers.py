@@ -14,7 +14,6 @@ class CocoaEnvironment(object):
     """
     def __init__(self, path):
         self.workdir = tempfile.mkdtemp(prefix='cocoa_templates_')
-        self.css = None
 
         # Drop in any templates from the local directory.  Because we need
         # to cope with relative imports and the like, we just copy them

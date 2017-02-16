@@ -5,6 +5,7 @@ import os
 
 import dateutil.parser as dp
 import markdown
+import mincss.processor as mp
 import scss
 
 from .utils import chunks, lazy_copyfile, slugify
@@ -12,19 +13,6 @@ from .writers import CocoaEnvironment
 
 
 MARKDOWN_EXTENSIONS = ('.txt', '.md', '.mdown', '.markdown')
-
-
-def write_html(output_dir, slug, string):
-    """
-    Writes a string to a path in the output directory.
-
-    This creates a directory with an ``index.html`` file, so you get
-    pretty URLs without needing web server configuration.
-    """
-    slug = slug.lstrip('/')
-    os.makedirs(os.path.join(output_dir, slug), exist_ok=True)
-    with open(os.path.join(output_dir, slug, 'index.html'), 'w') as f:
-        f.write(string)
 
 
 class Site:
@@ -44,21 +32,54 @@ class Site:
         self.pages = []
         self.env = CocoaEnvironment(path)
 
+    def write_html(self, slug, string):
+        """
+        Writes a string to a path in the output directory.
+
+        This creates a directory with an ``index.html`` file, so you get
+        pretty URLs without needing web server configuration.
+        """
+        slug = slug.lstrip('/')
+        os.makedirs(os.path.join(self.out_path, slug), exist_ok=True)
+
+        # Substitute the CSS declaration into the string.  We drop in
+        # the complete CSS declaration, then use mincss to work out what
+        # the minimal covering set is, and just use that.
+        full_html_str = string.replace(
+            '<!-- hc_css_include -->', '<style>%s</style>' % self._css
+        )
+        c = mp.Processor()
+        c.process_html(full_html_str, None)
+
+        # TODO: Get this properly, right now I'm guessing a bit about how
+        # to get results out of mincss
+        minimal_css = list(c.blocks.values())[0]
+
+        # TODO: What if this is super big?  You don't want to inline it,
+        # drop it in a file instead.
+        string = string.replace(
+            '<!-- hc_css_include -->', '<style>%s</style>' % minimal_css
+        )
+
+        with open(os.path.join(self.out_path, slug, 'index.html'), 'w') as f:
+            f.write(string)
+
     def build(self):
         """
         Build the complete site and write it to the output folder.
         """
+        self._compile_scss()
+
         template = self.env.get_template('article.html')
         # TODO: Spot if we've written multiple items with the same slug
         for post in self.posts:
             html = template.render(site=self, article=post)
-            write_html(self.out_path, post.out_path, html)
+            self.write_html(post.out_path, html)
 
         for page in self.pages:
             html = template.render(site=self, article=page)
-            write_html(self.out_path, page.out_path, html)
+            self.write_html(page.out_path, html)
 
-        self._compile_scss()
         self._build_index()
         self._build_tag_indices()
         self._copy_static_files()
@@ -82,18 +103,19 @@ class Site:
         return s
 
     def _compile_scss(self):
-        if not hasattr(self.env, 'css'):
+        if not hasattr(self, '_css'):
             compiler = scss.Compiler()
             # TODO: Minification
-            self.env.css = compiler.compile(
+            self._css = compiler.compile(
                 os.path.join(os.path.dirname(__file__), 'style', 'main.scss')
             )
 
             try:
-                self.env.css += compiler.compile(
+                self._css += compiler.compile(
                     os.path.join(self.path, 'style', 'custom.scss')
                 )
             except FileNotFoundError:
+                print('bobobo')
                 pass
 
     def _build_index(self, posts=None, prefix=''):
@@ -115,7 +137,7 @@ class Site:
                     slug = '/%s/%d' % (prefix, pageno)
                 else:
                     slug = '/page/%d' % pageno
-            write_html(self.out_path, slug, html)
+            self.write_html(slug, html)
 
     def _build_tag_indices(self):
         tags = collections.defaultdict(list)
