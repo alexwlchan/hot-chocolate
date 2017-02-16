@@ -4,19 +4,13 @@ import collections
 import os
 
 import dateutil.parser as dp
-from jinja2 import Environment, PackageLoader, select_autoescape
 import markdown
 
 from .utils import chunks, lazy_copyfile, slugify
+from .writers import CocoaEnvironment
 
 
 MARKDOWN_EXTENSIONS = ('.txt', '.md', '.mdown', '.markdown')
-
-
-ENV = Environment(
-    loader=PackageLoader('hotchocolate', 'templates'),
-    autoescape=select_autoescape(['html'])
-)
 
 
 def write_html(output_dir, slug, string):
@@ -37,17 +31,23 @@ class Site:
     Holds the settings for an individual site.
     """
     def __init__(self, path, out_path, language=None):
+        self.name = 'alexwlchan'
+        self.header_links = {
+            '/about/': 'about me',
+            '/blog/': 'blog',
+        }
         self.path = path
         self.out_path = out_path
         self.language = language or 'en'
         self.posts = []
         self.pages = []
+        self.env = CocoaEnvironment(path)
 
     def build(self):
         """
         Build the complete site and write it to the output folder.
         """
-        template = ENV.get_template('article.html')
+        template = self.env.get_template('article.html')
         # TODO: Spot if we've written multiple items with the same slug
         for post in self.posts:
             html = template.render(site=self, article=post)
@@ -82,7 +82,7 @@ class Site:
     def _build_index(self, posts=None, prefix=''):
         # TODO: Make this more generic
         # TODO: Make pagination size a setting
-        template = ENV.get_template('index.html')
+        template = self.env.get_template('index.html')
 
         if posts is None:
             posts = self.posts

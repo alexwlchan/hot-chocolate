@@ -1,0 +1,12 @@
+<div id="header_text">
+  <h1 id="brand"><a href="/">{{ site.name }}</a></h1>
+
+  {% if site.header_links %}
+  <div id="header_links">
+  {% for link in site.header_links %}
+    <a href="/{{ link }}/">{{ site.header_links[link] }}</a>
+    {% if loop.index != site.header_links|count %}•{% endif %}
+  {% endfor %}
+  </div>
+  {% endif %}
+</div>

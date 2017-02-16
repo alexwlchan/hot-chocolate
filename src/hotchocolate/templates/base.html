@@ -2,11 +2,37 @@
 <html lang="{{ site.language }}">
 
 <head>
+
+  <!-- CSS styles -->
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  {% if site.author %}
+    <meta name="author" content="{{ site.author }}" />
+  {% endif %}
+  {% if site.description %}
+    <meta name="description" content="{{ site.description }}" />
+  {% endif %}
+
+  <!-- Favicons -->
+  <!-- RSS feeds -->
+
+  <!-- Improve the title -->
   <title>A page made with Cacao</title>
 </head>
 
 <body>
+  <aside>
+  {% include "base_header.html" %}
+  </aside>
+
+  <main>
   {% block content %}{% endblock %}
+  </main>
+
+  <footer>
+  {% include "base_footer.html" %}
+  </footer>
 </body>
 
 </html>
