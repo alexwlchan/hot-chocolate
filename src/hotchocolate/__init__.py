@@ -2,10 +2,13 @@
 
 import collections
 import os
+import re
+import warnings
 
 import dateutil.parser as dp
 import markdown
 import mincss.processor as mp
+import requests
 import scss
 
 from .utils import chunks, lazy_copyfile, slugify
@@ -13,6 +16,25 @@ from .writers import CocoaEnvironment
 
 
 MARKDOWN_EXTENSIONS = ('.txt', '.md', '.mdown', '.markdown')
+
+
+def get_consolidated_css(css_str):
+    """
+    Try to get a consolidated CSS string using http://www.codebeautifier.com/.
+
+    If this fails it's not a disaster, we just might have slightly more
+    inefficient CSS strings, so we only warn on exceptions.
+    """
+    try:
+        r = requests.post(
+            'http://www.codebeautifier.com/',
+            data={'css_text': css_str}
+        )
+        encoded_css = r.text.split('<code id="code">')[1].split('</code>')[0]
+        return re.sub(r'<[^>]+>', r'', encoded_css)
+    except Exception as exc:
+        warnings.warn(err)
+        return css_str
 
 
 class CSSProcessor(mp.Processor):
@@ -26,13 +48,18 @@ class CSSProcessor(mp.Processor):
         return url
 
     def minify_css(self, html_str, css_str):
+        # This step removes any CSS selectors that aren't used in the
+        # provided HTML
         self.inlines = []
         self.process(html_str.replace(
             '<!-- hc_css_include -->', '<style>%s</style>' % css_str
         ))
+        css_str = self.inlines[0].after
+
+        # TODO: What if this is super big?  You don't want to inline it,
+        # drop it in a file instead.
         return html_str.replace(
-            '<!-- hc_css_include -->', '<style>%s</style>' %
-            (self.inlines[0].after)
+            '<!-- hc_css_include -->', '<style>%s</style>' % css_str
         )
 
 
@@ -68,16 +95,10 @@ class Site:
         # the minimal covering set is, and just use that.
         # TODO: Cache the CSSProcessor?
         p = CSSProcessor()
-        html_str = p.minify_css(html_str, self._css)
-
-        # TODO: What if this is super big?  You don't want to inline it,
-        # drop it in a file instead.
-        string = string.replace(
-            '<!-- hc_css_include -->', '<style>%s</style>' % minimal_css
-        )
+        html_str = p.minify_css(string, self._css)
 
         with open(os.path.join(self.out_path, slug, 'index.html'), 'w') as f:
-            f.write(string)
+            f.write(html_str)
 
     def build(self):
         """
@@ -131,6 +152,8 @@ class Site:
                 )
             except FileNotFoundError:
                 pass
+
+            self._css = get_consolidated_css(self._css)
 
     def _build_index(self, posts=None, prefix=''):
         # TODO: Make this more generic
