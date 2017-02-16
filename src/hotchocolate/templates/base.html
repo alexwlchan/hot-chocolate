@@ -27,15 +27,21 @@
 
 <body>
   <aside>
-  {% include "base_header.html" %}
+    <div id="aside_inner">
+      {% include "base_header.html" %}
+    </div>
   </aside>
 
   <main>
-  {% block content %}{% endblock %}
+    <div id="main_inner">
+      {% block content %}{% endblock %}
+    </div>
   </main>
 
   <footer>
-  {% include "base_footer.html" %}
+    <div id="footer_inner">
+      {% include "base_footer.html" %}
+    </div>
   </footer>
 </body>
 
