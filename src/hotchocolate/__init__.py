@@ -15,6 +15,27 @@ from .writers import CocoaEnvironment
 MARKDOWN_EXTENSIONS = ('.txt', '.md', '.mdown', '.markdown')
 
 
+class CSSProcessor(mp.Processor):
+    """
+    A wrapper around ``mincss.Processor`` that's designed to do in-memory
+    stripping of unused/duplicate CSS rules, minify the result and return
+    the final HTML string.
+    """
+
+    def download(self, url):
+        return url
+
+    def minify_css(self, html_str, css_str):
+        self.inlines = []
+        self.process(html_str.replace(
+            '<!-- hc_css_include -->', '<style>%s</style>' % css_str
+        ))
+        return html_str.replace(
+            '<!-- hc_css_include -->', '<style>%s</style>' %
+            (self.inlines[0].after)
+        )
+
+
 class Site:
     """
     Holds the settings for an individual site.
@@ -45,15 +66,9 @@ class Site:
         # Substitute the CSS declaration into the string.  We drop in
         # the complete CSS declaration, then use mincss to work out what
         # the minimal covering set is, and just use that.
-        full_html_str = string.replace(
-            '<!-- hc_css_include -->', '<style>%s</style>' % self._css
-        )
-        c = mp.Processor()
-        c.process_html(full_html_str, None)
-
-        # TODO: Get this properly, right now I'm guessing a bit about how
-        # to get results out of mincss
-        minimal_css = list(c.blocks.values())[0]
+        # TODO: Cache the CSSProcessor?
+        p = CSSProcessor()
+        html_str = p.minify_css(html_str, self._css)
 
         # TODO: What if this is super big?  You don't want to inline it,
         # drop it in a file instead.
@@ -115,7 +130,6 @@ class Site:
                     os.path.join(self.path, 'style', 'custom.scss')
                 )
             except FileNotFoundError:
-                print('bobobo')
                 pass
 
     def _build_index(self, posts=None, prefix=''):
