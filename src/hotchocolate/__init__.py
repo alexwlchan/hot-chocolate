@@ -5,6 +5,7 @@ import os
 
 import dateutil.parser as dp
 import markdown
+import scss
 
 from .utils import chunks, lazy_copyfile, slugify
 from .writers import CocoaEnvironment
@@ -57,6 +58,7 @@ class Site:
             html = template.render(site=self, article=page)
             write_html(self.out_path, page.out_path, html)
 
+        self._compile_scss()
         self._build_index()
         self._build_tag_indices()
         self._copy_static_files()
@@ -78,6 +80,21 @@ class Site:
                     s.pages.append(Page.from_file(os.path.join(root, f)))
 
         return s
+
+    def _compile_scss(self):
+        if not hasattr(self.env, 'css'):
+            compiler = scss.Compiler()
+            # TODO: Minification
+            self.env.css = compiler.compile(
+                os.path.join(os.path.dirname(__file__), 'style', 'main.scss')
+            )
+
+            try:
+                self.env.css += compiler.compile(
+                    os.path.join(self.path, 'style', 'custom.scss')
+                )
+            except FileNotFoundError:
+                pass
 
     def _build_index(self, posts=None, prefix=''):
         # TODO: Make this more generic
