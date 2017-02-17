@@ -5,14 +5,15 @@
   padding: 1px 20px;
 }
 
-$primary-color:   #7B3F00;
+// https://en.wikipedia.org/wiki/Chocolate_(color)
+$primary-color: #7B3F00 !default;
 
 $accent-grey:     #999;
 $light-grey:      #eee;
 
-$line-height:     1.25em;
-$meta-font-size:  0.85em;
-$big-font-size:   2em;
+$line-height:     1.25em !default;
+$meta-font-size:  0.85em !default;
+$big-font-size:   2em !default;
 
 @import "aside.scss";
 @import "footer.scss";
