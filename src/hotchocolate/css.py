@@ -42,7 +42,7 @@ def _get_consolidated_css(css_str):
         encoded_css = r.text.split('<code id="code">')[1].split('</code>')[0]
         return re.sub(r'<[^>]+>', r'', encoded_css)
     except Exception as exc:
-        warnings.warn(exc)
+        warnings.warn('Unable to minify CSS with CodeBeautifier: %s' % exc)
         return css_str
 
 
