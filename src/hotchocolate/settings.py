@@ -14,6 +14,58 @@ DEFAULT_SETTINGS = {
 }
 
 
+EMPTY_CONFIG = '''
+[site]
+; Name of the site
+name = {name}
+
+; Language code
+language = {language}
+
+; A list of links to display in the header.
+; header_links
+;     - /about/ about me
+;     - /blog/ my blog
+;     - /hobbies/ my hobbies
+'''
+
+
+def ask_for_value(question, default=None):
+    """
+    Ask the user for some input.
+
+    :param question: Question to ask.
+    :param allow_empty: If True, the user can enter nothing and still be
+        accepted.  Otherwise, the user will keep being prompted until they
+        enter a value.
+    """
+    if default is not None:
+        question = '%s [%s]' % (question, default)
+    while True:
+        result = input(question + ' ')
+        if result.strip():
+            return result.strip()
+        elif default is not None:
+            return default
+
+
+def create_new_settings():
+    """
+    Ask the user for their settings, and return the contents of a new
+    settings file.
+    """
+    name = ask_for_value(
+        'What is the name of the site?'
+    )
+    language = ask_for_value(
+        'What language is the site written in?', default='en'
+    )
+
+    return EMPTY_CONFIG.format(
+        name=name, language=language,
+    )
+
+
 class SiteSettings:
 
     def __init__(self, path):
