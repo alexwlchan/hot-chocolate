@@ -2,11 +2,13 @@
 
 import collections
 import os
+import warnings
 
 import dateutil.parser as dp
 import markdown
 
 from .css import CSSProcessor
+from .settings import SiteSettings
 from .utils import chunks, lazy_copyfile, slugify
 from .writers import CocoaEnvironment
 
@@ -14,20 +16,29 @@ from .writers import CocoaEnvironment
 MARKDOWN_EXTENSIONS = ('.txt', '.md', '.mdown', '.markdown')
 
 
+class _SiteSettingDescriptor:
+    def __init__(self, section, option):
+        self.section = section
+        self.option = option
+
+    def __get__(self, instance, type):
+        return instance.settings.get(self.section, self.option)
+
+
 class Site:
     """
     Holds the settings for an individual site.
     """
+
+    name = _SiteSettingDescriptor('site', 'name')
+    header_links = _SiteSettingDescriptor('site', 'header_links')
+    language = _SiteSettingDescriptor('site', 'language')
+
     def __init__(self):
         self.path = os.path.abspath(os.curdir)
         self.out_path = '_output'
+        self.settings = SiteSettings(self.path)
 
-        self.name = 'alexwlchan'
-        self.header_links = {
-            '/about/': 'about me',
-            '/blog/': 'blog',
-        }
-        self.language = 'en'
         self.posts = []
         self.pages = []
         self.env = CocoaEnvironment(self.path)
