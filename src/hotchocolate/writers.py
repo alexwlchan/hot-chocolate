@@ -27,14 +27,15 @@ class CocoaEnvironment(object):
         # to cope with relative imports and the like, we just copy them
         # all to a temporary directory and work from there.
         try:
-            for tmpl in os.listdir(os.path.join(path, 'templates')):
+            os.makedirs(self.workdir, exist_ok=True)
+            tmpl_path = os.path.join(path, 'templates')
+            for tmpl in os.listdir(tmpl_path):
                 if os.path.basename(tmpl).startswith('.'):
                     continue
                 os.link(
-                    src=os.path.abspath(tmpl),
+                    src=os.path.abspath(os.path.join(tmpl_path, tmpl)),
                     dst=os.path.join(self.workdir, os.path.basename(tmpl))
                 )
-
             if os.listdir(self.workdir) == []:
                 raise FileNotFoundError('No custom templates')
 
@@ -56,7 +57,7 @@ class CocoaEnvironment(object):
                     continue
                 try:
                     os.link(
-                        src=os.path.abspath(tmpl),
+                        src=os.path.abspath(os.path.join(package_dir, tmpl)),
                         dst=os.path.join(self.workdir, name)
                     )
                 except FileExistsError:
