@@ -3,7 +3,11 @@
 
 <head>
 
-  <!-- CSS styles -->
+  {#
+    This HTML comment will be expanded to include the CSS declaration
+    and/or a link to a CSS file as appropriate.
+  #}
+  <!-- hc_css_include -->
 
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -23,15 +27,21 @@
 
 <body>
   <aside>
-  {% include "base_header.html" %}
+    <div id="aside_inner">
+      {% include "base_header.html" %}
+    </div>
   </aside>
 
   <main>
-  {% block content %}{% endblock %}
+    <div id="main_inner">
+      {% block content %}{% endblock %}
+    </div>
   </main>
 
   <footer>
-  {% include "base_footer.html" %}
+    <div id="footer_inner">
+      {% include "base_footer.html" %}
+    </div>
   </footer>
 </body>
 

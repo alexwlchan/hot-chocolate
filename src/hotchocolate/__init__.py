@@ -6,24 +6,12 @@ import os
 import dateutil.parser as dp
 import markdown
 
+from .css import CSSProcessor
 from .utils import chunks, lazy_copyfile, slugify
 from .writers import CocoaEnvironment
 
 
 MARKDOWN_EXTENSIONS = ('.txt', '.md', '.mdown', '.markdown')
-
-
-def write_html(output_dir, slug, string):
-    """
-    Writes a string to a path in the output directory.
-
-    This creates a directory with an ``index.html`` file, so you get
-    pretty URLs without needing web server configuration.
-    """
-    slug = slug.lstrip('/')
-    os.makedirs(os.path.join(output_dir, slug), exist_ok=True)
-    with open(os.path.join(output_dir, slug, 'index.html'), 'w') as f:
-        f.write(string)
 
 
 class Site:
@@ -42,6 +30,22 @@ class Site:
         self.posts = []
         self.pages = []
         self.env = CocoaEnvironment(path)
+        self.css_proc = CSSProcessor(path)
+
+    def write_html(self, slug, html_str):
+        """
+        Writes a string to a path in the output directory.
+
+        This creates a directory with an ``index.html`` file, so you get
+        pretty URLs without needing web server configuration.
+        """
+        slug = slug.lstrip('/')
+        os.makedirs(os.path.join(self.out_path, slug), exist_ok=True)
+
+        html_str = self.css_proc.insert_css_for_page(html_str)
+
+        with open(os.path.join(self.out_path, slug, 'index.html'), 'w') as f:
+            f.write(html_str)
 
     def build(self):
         """
@@ -51,11 +55,11 @@ class Site:
         # TODO: Spot if we've written multiple items with the same slug
         for post in self.posts:
             html = template.render(site=self, article=post)
-            write_html(self.out_path, post.out_path, html)
+            self.write_html(post.out_path, html)
 
         for page in self.pages:
             html = template.render(site=self, article=page)
-            write_html(self.out_path, page.out_path, html)
+            self.write_html(page.out_path, html)
 
         self._build_index()
         self._build_tag_indices()
@@ -98,7 +102,7 @@ class Site:
                     slug = '/%s/%d' % (prefix, pageno)
                 else:
                     slug = '/page/%d' % pageno
-            write_html(self.out_path, slug, html)
+            self.write_html(slug, html)
 
     def _build_tag_indices(self):
         tags = collections.defaultdict(list)

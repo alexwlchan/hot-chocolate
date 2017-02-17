@@ -1,0 +1,10 @@
+footer {
+  font-size: $meta-font-size;
+  &, a {
+    color: $accent-grey;
+  }
+  #hc_github:hover {
+    color: #7B3F00;  /* https://en.wikipedia.org/wiki/Chocolate_(color) */
+  }
+  border-top: 1px solid $light-grey;
+}

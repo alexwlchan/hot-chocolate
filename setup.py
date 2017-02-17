@@ -39,10 +39,13 @@ setup(
     package_dir={'': SOURCE},
     install_requires=[
         'click>=6.7,<7',
+        'csscompressor>=0.9.4,<1',
         'docker>=2.0.2,<3',
         'python-dateutil>=2.6.0,<3',
         'Jinja2>=2.9.5,<3',
         'Markdown>=2.6.8,<3',
+        'mincss>=0.11.2,<0.12',
+        'pyScss>=1.3.5,<2',
         'unidecode>=0.04.20,<0.05',
     ],
     entry_points={

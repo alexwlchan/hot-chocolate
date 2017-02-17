@@ -1,0 +1,29 @@
+body {
+  margin:  0;
+  padding: 0;
+}
+
+aside {
+  background-color: $primary-color;
+  background-size: auto 100%;
+
+  &, a {
+    color: white;
+  }
+  a:hover {
+    text-decoration: none;
+  }
+}
+
+#brand {
+  margin-top: 15px;
+  margin-bottom: 10px;
+  a {
+    text-decoration: none;
+    font-size: 1.5em;
+  }
+}
+
+#aside_links {
+  padding-bottom: 15px;
+}
