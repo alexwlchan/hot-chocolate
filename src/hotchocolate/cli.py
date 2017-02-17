@@ -31,6 +31,8 @@ def clean():
     """
     Delete the output folder, if it exists.
     """
+    # TODO: This will clobber the Docker container's volume mount, if present
+    # Stop and delete the container if it's running.
     try:
         shutil.rmtree('output')
     except FileNotFoundError:

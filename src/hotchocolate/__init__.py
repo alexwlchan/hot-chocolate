@@ -193,6 +193,7 @@ class Article:
             key, value = line.split(':', 1)
             metadata[key.strip()] = value.strip()
 
+        # TODO: Use Smartypants here
         return cls(
             content=markdown.markdown(content),
             metadata=metadata,
