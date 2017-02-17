@@ -18,19 +18,20 @@ class Site:
     """
     Holds the settings for an individual site.
     """
-    def __init__(self, path, out_path, language=None):
+    def __init__(self):
+        self.path = os.path.abspath(os.curdir)
+        self.out_path = '_output'
+
         self.name = 'alexwlchan'
         self.header_links = {
             '/about/': 'about me',
             '/blog/': 'blog',
         }
-        self.path = path
-        self.out_path = out_path
-        self.language = language or 'en'
+        self.language = 'en'
         self.posts = []
         self.pages = []
-        self.env = CocoaEnvironment(path)
-        self.css_proc = CSSProcessor(path)
+        self.env = CocoaEnvironment(self.path)
+        self.css_proc = CSSProcessor(self.path)
 
     def write_html(self, slug, html_str):
         """
@@ -70,18 +71,18 @@ class Site:
         """
         Construct a ``Site`` instance from a folder on disk.
         """
-        s = cls(path=path, out_path='output')
-        for root, _, filenames in os.walk(os.path.join(path, 'posts')):
+        site = cls()
+        for root, _, filenames in os.walk(os.path.join(site.path, 'posts')):
             for f in filenames:
                 if os.path.splitext(f)[1].lower() in MARKDOWN_EXTENSIONS:
-                    s.posts.append(Post.from_file(os.path.join(root, f)))
+                    site.posts.append(Post.from_file(os.path.join(root, f)))
 
-        for root, _, filenames in os.walk(os.path.join(path, 'pages')):
+        for root, _, filenames in os.walk(os.path.join(site.path, 'pages')):
             for f in filenames:
                 if os.path.splitext(f)[1].lower() in MARKDOWN_EXTENSIONS:
-                    s.pages.append(Page.from_file(os.path.join(root, f)))
+                    site.pages.append(Page.from_file(os.path.join(root, f)))
 
-        return s
+        return site
 
     def _build_index(self, posts=None, prefix=''):
         # TODO: Make this more generic
