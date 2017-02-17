@@ -191,13 +191,15 @@ class Page(Article):
     """
     Holds information about an individual page.
     """
-    pass
+    type = 'page'
 
 
 class Post(Article):
     """
     Holds information about an individual post.
     """
+    type = 'post'
+
     def __init__(self, content, metadata, path):
         # TODO: Error handling
         self.date = dp.parse(metadata.pop('date'))

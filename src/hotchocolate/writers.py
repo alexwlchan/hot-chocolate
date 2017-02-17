@@ -7,6 +7,14 @@ from jinja2 import (
     Environment, FileSystemLoader, PackageLoader, select_autoescape)
 
 
+def locale_date(date):
+    """
+    Render a date in the current locale date.
+    """
+    # TODO: Make this configurable
+    return date.strftime('%-d %B %Y')
+
+
 class CocoaEnvironment(object):
     """
     Wrapper for ``jinja2.Environment`` that allows the user to override
@@ -42,7 +50,6 @@ class CocoaEnvironment(object):
         # directory and then use a FileSystemLoader.
         else:
             package_dir = os.path.join(os.path.dirname(__file__), 'templates')
-            print(self.workdir)
             for tmpl in os.listdir(package_dir):
                 name = os.path.basename(tmpl)
                 if name.startswith('.'):
@@ -58,6 +65,8 @@ class CocoaEnvironment(object):
                 loader=FileSystemLoader(self.workdir),
                 autoescape=select_autoescape(['html'])
             )
+
+        self.env.filters['locale_date'] = locale_date
 
     def get_template(self, *args, **kwargs):
         return self.env.get_template(*args, **kwargs)
