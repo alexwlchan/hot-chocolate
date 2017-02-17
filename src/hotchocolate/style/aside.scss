@@ -4,16 +4,15 @@ body {
 }
 
 aside {
-  background-color: #7B3F00;
+  background-color: $primary-color;
   background-size: auto 100%;
 
   &, a {
     color: white;
   }
-}
-
-#aside_inner {
-  padding: 1px 20px;
+  a:hover {
+    text-decoration: none;
+  }
 }
 
 #brand {
