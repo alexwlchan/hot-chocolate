@@ -2,7 +2,6 @@
 
 import collections
 import os
-import warnings
 
 import dateutil.parser as dp
 import markdown

@@ -97,7 +97,6 @@ class CSSProcessor:
             os.path.join('style'),
             os.path.join(os.path.dirname(__file__), 'style')
         ])
-        namespace = scss.namespace.Namespace()
 
         # First we get the theme from the package itself.  This is kept
         # in ``style/main.scss`` within the package directory.
