@@ -42,7 +42,7 @@ def _get_consolidated_css(css_str):
         encoded_css = r.text.split('<code id="code">')[1].split('</code>')[0]
         return re.sub(r'<[^>]+>', r'', encoded_css)
     except Exception as exc:
-        warnings.warn(exc)
+        warnings.warn('Unable to minify CSS with CodeBeautifier: %s' % exc)
         return css_str
 
 
@@ -93,23 +93,29 @@ class CSSProcessor:
         Get the base site CSS, based on SCSS files in the package theme
         and anything in the ``style`` directory.
         """
-        scss_compiler = scss.Compiler()
+        scss_compiler = scss.Compiler(search_path=[
+            os.path.join('style'),
+            os.path.join(os.path.dirname(__file__), 'style')
+        ])
 
         # First we get the theme from the package itself.  This is kept
         # in ``style/main.scss`` within the package directory.
         # TODO: Is the `style` directory included in the package manifest?
-        css_str = scss_compiler.compile(
+        scss_str = open(
             os.path.join(os.path.dirname(__file__), 'style', 'main.scss')
-        )
+        ).read()
 
         # Next look for ``style/custom.css`` in the site directory, and
         # try to add that.  If it doesn't exist, use the base theme.
         try:
-            css_str += scss_compiler.compile(
+            custom_scss = open(
                 os.path.join(path, 'style', 'custom.scss')
-            )
+            ).read()
+            scss_str = custom_scss + scss_str + custom_scss
         except FileNotFoundError:
             pass
+
+        css_str = scss_compiler.compile_string(scss_str)
 
         # Loading the custom theme may have introduced redundant selectors
         # (or heck, just carelessness from the person who wrote the CSS).

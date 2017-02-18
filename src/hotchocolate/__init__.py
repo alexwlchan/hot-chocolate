@@ -7,6 +7,7 @@ import dateutil.parser as dp
 import markdown
 
 from .css import CSSProcessor
+from .settings import SiteSettings
 from .utils import chunks, lazy_copyfile, slugify
 from .writers import CocoaEnvironment
 
@@ -14,23 +15,33 @@ from .writers import CocoaEnvironment
 MARKDOWN_EXTENSIONS = ('.txt', '.md', '.mdown', '.markdown')
 
 
+class _SiteSettingDescriptor:
+    def __init__(self, section, option):
+        self.section = section
+        self.option = option
+
+    def __get__(self, instance, type):
+        return instance.settings.get(self.section, self.option)
+
+
 class Site:
     """
     Holds the settings for an individual site.
     """
-    def __init__(self, path, out_path, language=None):
-        self.name = 'alexwlchan'
-        self.header_links = {
-            '/about/': 'about me',
-            '/blog/': 'blog',
-        }
-        self.path = path
-        self.out_path = out_path
-        self.language = language or 'en'
+
+    name = _SiteSettingDescriptor('site', 'name')
+    header_links = _SiteSettingDescriptor('site', 'header_links')
+    language = _SiteSettingDescriptor('site', 'language')
+
+    def __init__(self):
+        self.path = os.path.abspath(os.curdir)
+        self.out_path = '_output'
+        self.settings = SiteSettings(self.path)
+
         self.posts = []
         self.pages = []
-        self.env = CocoaEnvironment(path)
-        self.css_proc = CSSProcessor(path)
+        self.env = CocoaEnvironment(self.path)
+        self.css_proc = CSSProcessor(self.path)
 
     def write_html(self, slug, html_str):
         """
@@ -70,18 +81,18 @@ class Site:
         """
         Construct a ``Site`` instance from a folder on disk.
         """
-        s = cls(path=path, out_path='output')
-        for root, _, filenames in os.walk(os.path.join(path, 'posts')):
+        site = cls()
+        for root, _, filenames in os.walk(os.path.join(site.path, 'posts')):
             for f in filenames:
                 if os.path.splitext(f)[1].lower() in MARKDOWN_EXTENSIONS:
-                    s.posts.append(Post.from_file(os.path.join(root, f)))
+                    site.posts.append(Post.from_file(os.path.join(root, f)))
 
-        for root, _, filenames in os.walk(os.path.join(path, 'pages')):
+        for root, _, filenames in os.walk(os.path.join(site.path, 'pages')):
             for f in filenames:
                 if os.path.splitext(f)[1].lower() in MARKDOWN_EXTENSIONS:
-                    s.pages.append(Page.from_file(os.path.join(root, f)))
+                    site.pages.append(Page.from_file(os.path.join(root, f)))
 
-        return s
+        return site
 
     def _build_index(self, posts=None, prefix=''):
         # TODO: Make this more generic
@@ -181,6 +192,7 @@ class Article:
             key, value = line.split(':', 1)
             metadata[key.strip()] = value.strip()
 
+        # TODO: Use Smartypants here
         return cls(
             content=markdown.markdown(content),
             metadata=metadata,
@@ -191,13 +203,15 @@ class Page(Article):
     """
     Holds information about an individual page.
     """
-    pass
+    type = 'page'
 
 
 class Post(Article):
     """
     Holds information about an individual post.
     """
+    type = 'post'
+
     def __init__(self, content, metadata, path):
         # TODO: Error handling
         self.date = dp.parse(metadata.pop('date'))

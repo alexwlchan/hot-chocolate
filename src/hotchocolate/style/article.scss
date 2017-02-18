@@ -1,3 +1,16 @@
 article {
   line-height: $line-height;
+  padding-top:    5px;
+  padding-bottom: 5px;
+
+  h1 {
+    color: $primary-color;
+    font-size: $big-font-size;
+  }
+}
+
+.article_meta {
+  margin-top: -10px;
+  color: $accent-grey;
+  font-size: $meta-font-size;
 }

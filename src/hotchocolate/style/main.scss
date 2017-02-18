@@ -1,19 +1,28 @@
-#aside_inner, #main_inner, #footer_inner {
-  max-width: 700px;
+#aside_inner, #footer_inner, article {
+  max-width: 750px;
   margin-left:  auto;
   margin-right: auto;
   padding: 1px 20px;
 }
 
-$primary-color:   #7B3F00;
+// https://en.wikipedia.org/wiki/Chocolate_(color)
+$primary-color: #7B3F00 !default;
 
 $accent-grey:     #999;
 $light-grey:      #eee;
 
-$line-height:     1.25em;
-$meta-font-size:  0.85em;
+$line-height:     1.25em !default;
+$meta-font-size:  0.85em !default;
+$big-font-size:   2em !default;
 
 @import "aside.scss";
 @import "footer.scss";
 
 @import "article.scss";
+
+
+hr {
+  background-color: $light-grey;
+  height: 1px;
+  border: 0px;
+}

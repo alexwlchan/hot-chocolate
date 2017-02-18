@@ -9,6 +9,7 @@ import docker
 import requests
 
 from . import Site
+from .settings import create_new_settings
 
 
 @click.group()
@@ -30,6 +31,8 @@ def clean():
     """
     Delete the output folder, if it exists.
     """
+    # TODO: This will clobber the Docker container's volume mount, if present
+    # Stop and delete the container if it's running.
     try:
         shutil.rmtree('output')
     except FileNotFoundError:
@@ -89,3 +92,16 @@ def publish():
 
     site = Site.from_folder('content')
     site.build()
+
+
+@cli.command('init', help='start a new Hot Chocolate site')
+def init():
+    """
+    The ``init`` command creates a new site.
+    """
+    config_str = create_new_settings()
+    with open('config.ini', 'w') as cfgfile:
+        cfgfile.write(config_str)
+
+    for dirname in ('pages', 'posts', 'static', 'style', 'templates'):
+        os.makedirs(dirname, exist_ok=True)
