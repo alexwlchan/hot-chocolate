@@ -32,6 +32,7 @@ class Site:
     name = _SiteSettingDescriptor('site', 'name')
     header_links = _SiteSettingDescriptor('site', 'header_links')
     language = _SiteSettingDescriptor('site', 'language')
+    subtitle = _SiteSettingDescriptor('site', 'subtitle')
 
     def __init__(self):
         self.path = os.path.abspath(os.curdir)
