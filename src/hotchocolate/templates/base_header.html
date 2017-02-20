@@ -1,5 +1,9 @@
 <h1 id="brand"><a href="/">{{ site.name }}</a></h1>
 
+{% if site.subtitle %}
+<h2 id="subtitle">{{ site.subtitle }}</h2>
+{% endif %}
+
 {% if site.header_links %}
 <div id="aside_links">
 {% for link in site.header_links %}

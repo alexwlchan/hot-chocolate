@@ -21,8 +21,7 @@
   <!-- Favicons -->
   <!-- RSS feeds -->
 
-  <!-- Improve the title -->
-  <title>A page made with Cacao</title>
+  <title>{% if title %}{{ title }} &mdash; {% endif %}{{ site.name }}</title>
 </head>
 
 <body>

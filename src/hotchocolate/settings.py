@@ -23,11 +23,11 @@ name = {name}
 language = {language}
 
 ; A list of links to display in the header.
-; header_links
+; header_links =
 ;     - /about/ about me
 ;     - /blog/ my blog
 ;     - /hobbies/ my hobbies
-'''
+'''.rstrip()
 
 
 def ask_for_value(question, default=None):

@@ -40,7 +40,28 @@ def _get_consolidated_css(css_str):
             data={'css_text': css_str}
         )
         encoded_css = r.text.split('<code id="code">')[1].split('</code>')[0]
-        return re.sub(r'<[^>]+>', r'', encoded_css)
+        encoded_css = re.sub(r'<[^>]+>', r'', encoded_css)
+
+        # There's an interesting bug with CodeBeautifier, possibly because
+        # it runs to an old version of the CSS spec, where it mangles media
+        # queries.  Specifically, this:
+        #
+        #     @media screen and (max-width: 500px) { a { color: red; } }
+        #
+        # becomes:
+        #
+        #     @media screen and max-width 500px { a { color: red; } }
+        #
+        # which no longer works.  Fix that up by hand: the media queries
+        # used in Hot Chocolate sites should be fairly simple.
+        #
+        encoded_css = re.sub(
+            r'@media screen and (max|min)-width ([0-9]+)px',
+            r'@media screen and (\1-width: \2px)',
+            encoded_css
+        )
+
+        return encoded_css
     except Exception as exc:
         warnings.warn('Unable to minify CSS with CodeBeautifier: %s' % exc)
         return css_str

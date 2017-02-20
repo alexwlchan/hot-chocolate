@@ -32,6 +32,7 @@ class Site:
     name = _SiteSettingDescriptor('site', 'name')
     header_links = _SiteSettingDescriptor('site', 'header_links')
     language = _SiteSettingDescriptor('site', 'language')
+    subtitle = _SiteSettingDescriptor('site', 'subtitle')
 
     def __init__(self):
         self.path = os.path.abspath(os.curdir)
@@ -65,11 +66,11 @@ class Site:
         template = self.env.get_template('article.html')
         # TODO: Spot if we've written multiple items with the same slug
         for post in self.posts:
-            html = template.render(site=self, article=post)
+            html = template.render(site=self, article=post, title=post.title)
             self.write_html(post.out_path, html)
 
         for page in self.pages:
-            html = template.render(site=self, article=page)
+            html = template.render(site=self, article=page, title=page.title)
             self.write_html(page.out_path, html)
 
         self._build_index()
