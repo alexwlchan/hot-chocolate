@@ -37,6 +37,7 @@ setup(
     ],
     packages=find_packages(SOURCE),
     package_dir={'': SOURCE},
+    include_package_data=True,
     install_requires=[
         'click>=6.7,<7',
         'csscompressor>=0.9.4,<1',
