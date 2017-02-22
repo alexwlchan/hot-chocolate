@@ -191,7 +191,10 @@ class Article:
 
         # Metadata is separated from the rest of the content by an empty line.
         # TODO: Make this robust to trailing whitespace.
-        metadata_str, content = file_contents.split('\n\n', 1)
+        try:
+            metadata_str, content = file_contents.split('\n\n', 1)
+        except ValueError:
+            metadata_str, content = file_contents.strip(), ''
 
         # TODO: Handle quoted strings?  Lists?
         metadata = {}
