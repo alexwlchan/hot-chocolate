@@ -10,6 +10,7 @@ DEFAULT_SETTINGS = {
         'name': 'My Great Site',
         'header_links': {},
         'language': 'en',
+        'subtitle': None,
     },
 }
 
