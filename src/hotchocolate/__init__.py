@@ -2,9 +2,15 @@
 
 import collections
 import os
+import sys
 
 import dateutil.parser as dp
 import markdown
+
+if sys.version_info < (3, 5):
+    raise ImportError(
+        'Hot Chocolate is not supported on Python versions before 3.5'
+    )
 
 from .css import CSSProcessor
 from .settings import SiteSettings
