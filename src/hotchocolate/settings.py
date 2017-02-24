@@ -12,6 +12,9 @@ DEFAULT_SETTINGS = {
         'language': 'en',
         'subtitle': None,
     },
+    'layout': {
+        'page_size': 10,
+    },
 }
 
 
@@ -28,6 +31,10 @@ language = {language}
 ;     - /about/ about me
 ;     - /blog/ my blog
 ;     - /hobbies/ my hobbies
+
+[layout]
+; Number of articles per page
+; page_size = 10
 '''.rstrip()
 
 

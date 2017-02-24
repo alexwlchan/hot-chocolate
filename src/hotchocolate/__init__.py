@@ -23,12 +23,17 @@ MARKDOWN_EXTENSIONS = ('.txt', '.md', '.mdown', '.markdown')
 
 
 class _SiteSettingDescriptor:
-    def __init__(self, section, option):
+    def __init__(self, section, option, converter=None):
         self.section = section
         self.option = option
+        self.converter = converter
 
     def __get__(self, instance, type):
-        return instance.settings.get(self.section, self.option)
+        value = instance.settings.get(self.section, self.option)
+        if self.converter is not None:
+            return self.converter(value)
+        else:
+            return value
 
 
 class Site:
@@ -40,6 +45,7 @@ class Site:
     header_links = _SiteSettingDescriptor('site', 'header_links')
     language = _SiteSettingDescriptor('site', 'language')
     subtitle = _SiteSettingDescriptor('site', 'subtitle')
+    page_size = _SiteSettingDescriptor('layout', 'page_size', converter=int)
 
     def __init__(self):
         self.path = os.path.abspath(os.curdir)
@@ -111,7 +117,7 @@ class Site:
             posts = self.posts
 
         posts = sorted(posts, key=lambda x: x.date, reverse=True)
-        for pageno, p in enumerate(chunks(posts, 5), start=1):
+        for pageno, p in enumerate(chunks(posts, self.page_size), start=1):
             html = template.render(site=self, articles=p)
 
             if pageno == 1:
