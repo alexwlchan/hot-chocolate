@@ -5,6 +5,7 @@ import os
 import sys
 
 import dateutil.parser as dp
+import htmlmin
 import markdown
 
 if sys.version_info < (3, 5):
@@ -63,7 +64,7 @@ class Site:
         html_str = self.css_proc.insert_css_for_page(html_str)
 
         with open(os.path.join(self.out_path, slug, 'index.html'), 'w') as f:
-            f.write(html_str)
+            f.write(htmlmin.minify(html_str))
 
     def build(self):
         """

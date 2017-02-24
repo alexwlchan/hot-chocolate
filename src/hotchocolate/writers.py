@@ -71,16 +71,3 @@ class CocoaEnvironment(object):
 
     def get_template(self, *args, **kwargs):
         return self.env.get_template(*args, **kwargs)
-
-
-def write_html(output_dir, slug, string):
-    """
-    Writes a string to a path in the output directory.
-
-    This creates a directory with an ``index.html`` file, so you get
-    pretty URLs without needing web server configuration.
-    """
-    slug = slug.lstrip('/')
-    os.makedirs(os.path.join(output_dir, slug), exist_ok=True)
-    with open(os.path.join(output_dir, slug, 'index.html'), 'w') as f:
-        f.write(string)

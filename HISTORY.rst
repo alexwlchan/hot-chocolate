@@ -1,6 +1,13 @@
 Release History
 ===============
 
+1.1-dev
+-------
+
+Features:
+
+- Minify HTML upon export.
+
 1.0.1 (2017-02-22)
 ------------------
 
