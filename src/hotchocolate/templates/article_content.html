@@ -1,6 +1,6 @@
 <article>
 
-<h1>{{ article.title }}</h1>
+{% if article.title %}<h1>{{ article.title }}</h1>{% endif %}
 
 {% if article.type == 'post' %}
 <div class="article_meta">
