@@ -17,6 +17,7 @@ it as efficient as possible:
 
 """
 
+import html
 import os
 import re
 import warnings
@@ -41,6 +42,17 @@ def _get_consolidated_css(css_str):
         )
         encoded_css = r.text.split('<code id="code">')[1].split('</code>')[0]
         encoded_css = re.sub(r'<[^>]+>', r'', encoded_css)
+
+        # If there were characters that get HTML encoded in the CSS, we
+        # need to turn them back into literal characters.  For example:
+        #
+        #     a:before { content: "foo"; }
+        #
+        # becomes
+        #
+        #     a:before { content: &quot;foo&quot;; }
+        #
+        encoded_css = html.unescape(encoded_css)
 
         # There's an interesting bug with CodeBeautifier, possibly because
         # it runs to an old version of the CSS spec, where it mangles media

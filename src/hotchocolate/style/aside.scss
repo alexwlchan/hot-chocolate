@@ -24,6 +24,17 @@ aside {
   }
 }
 
-#aside_links {
-  padding-bottom: 15px;
+#aside_links ul {
+  padding-top:    5px;
+  padding-bottom: 5px;
+  list-style-type: none;
+  padding-left: 0;
+
+  // Ensure they all display in a line
+  li {
+    display: inline-block;
+  }
+  li:not(:first-child)::before {
+    content: " · ";
+  }
 }
