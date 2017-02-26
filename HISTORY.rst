@@ -1,6 +1,15 @@
 Release History
 ===============
 
+1.0.2 (2017-02-26)
+------------------
+
+Two accessibility-related bugfixes, both found with `pa11y <https://github.com/pa11y/pa11y>`_:
+
+-  Render heading links as an HTML ``<ul>`` list.
+-  Only include ``<h1>`` tags for the title of a page if the title is
+   non-empty.
+
 1.0.1 (2017-02-22)
 ------------------
 
