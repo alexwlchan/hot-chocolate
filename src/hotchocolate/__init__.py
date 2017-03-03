@@ -7,7 +7,7 @@ import sys
 import dateutil.parser as dp
 import markdown
 
-if sys.version_info < (3, 5):
+if sys.version_info < (3, 5):  # noqa
     raise ImportError(
         'Hot Chocolate is not supported on Python versions before 3.5'
     )
