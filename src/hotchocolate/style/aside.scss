@@ -36,5 +36,6 @@ aside {
   }
   li:not(:first-child)::before {
     content: " · ";
+    padding-right: 4px;
   }
 }
