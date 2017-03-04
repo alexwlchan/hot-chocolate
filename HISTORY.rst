@@ -1,6 +1,14 @@
 Release History
 ===============
 
+1.0.3-dev
+---------
+
+Bugfixes:
+
+-  In the list of tags on a post, the last tag is no longer followed by an
+   extraneous comma.
+
 1.0.2 (2017-02-26)
 ------------------
 

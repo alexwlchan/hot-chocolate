@@ -9,7 +9,15 @@
 {% endif %}
 
 {% if article.tags|length > 0 %}
-<h2>Tagged with: {% for tag in article.tags|sort %}{{ tag }}, {% endfor %}</h2>
+<span id="article_tags">Tagged with:
+
+  {#
+    Fill in a comma-separated list of tags, ensuring that the last
+    tag isn't followed by a comma.
+  #}
+  {% for tag in article.tags|sort %}
+    {{ tag }}{% if loop.index != article.tags|count %}, {% endif %}
+  {% endfor %}</span>
 {% endif %}
 
 {{ article.content|safe }}
