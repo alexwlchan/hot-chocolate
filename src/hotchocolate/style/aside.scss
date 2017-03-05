@@ -24,11 +24,9 @@ aside {
   }
 }
 
-#aside_links ul {
-  padding-top:    5px;
-  padding-bottom: 5px;
+.dot_list {
   list-style-type: none;
-  padding-left: 0;
+  padding-left: 0px !important;
 
   // Ensure they all display in a line
   li {
@@ -36,6 +34,11 @@ aside {
   }
   li:not(:first-child)::before {
     content: " · ";
-    padding-right: 4px;
+//    padding-right: 4px;
   }
+}
+
+#aside_links ul {
+  padding-top:    5px;
+  padding-bottom: 5px;
 }

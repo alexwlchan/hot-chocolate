@@ -10,7 +10,8 @@ $line-height:     1.25em !default;
 $meta-font-size:  0.85em !default;
 $big-font-size:   2em !default;
 
-#aside_inner, #footer_inner, article, #brand, #subtitle, #aside_links ul {
+#aside_inner, #footer_inner, article,
+#subtitle, #aside_links ul {
   max-width: $max-width;
   margin-left:  auto;
   margin-right: auto;
