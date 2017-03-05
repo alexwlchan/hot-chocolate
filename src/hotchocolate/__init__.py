@@ -102,7 +102,7 @@ class Site:
 
         return site
 
-    def _build_index(self, posts=None, prefix=''):
+    def _build_index(self, posts=None, prefix='', title=None):
         # TODO: Make this more generic
         # TODO: Make pagination size a setting
         template = self.env.get_template('index.html')
@@ -112,7 +112,7 @@ class Site:
 
         posts = sorted(posts, key=lambda x: x.date, reverse=True)
         for pageno, p in enumerate(chunks(posts, 5), start=1):
-            html = template.render(site=self, articles=p)
+            html = template.render(site=self, articles=p, title=title)
 
             if pageno == 1:
                 slug = '/%s/' % prefix
@@ -131,7 +131,8 @@ class Site:
         for t, posts in tags.items():
             self._build_index(
                 posts=posts,
-                prefix='/tag/%s' % t)
+                prefix='/tag/%s' % t,
+                title='Tagged with “%s”' % t)
 
     def _copy_static_files(self):
         for root, _, filenames in os.walk(os.path.join(self.path, 'static')):

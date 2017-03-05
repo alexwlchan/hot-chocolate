@@ -2,11 +2,12 @@
 $primary-color: #7B3F00 !default;
 $main-font-family: serif !default;
 
+$black:           #202020;
 $accent-grey:     #999;
 $light-grey:      #eee;
 
 $max-width:       750px !default;
-$line-height:     1.35em !default;
+$line-height:     1.4em !default;
 $meta-font-size:  0.85em !default;
 $big-font-size:   2em !default;
 
@@ -42,6 +43,7 @@ h2 {
 body {
   font: 12pt $main-font-family;
   line-height: $line-height;
+  color: $black;
 }
 
 hr {
