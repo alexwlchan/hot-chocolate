@@ -2,14 +2,24 @@
 
 {% if article.title %}<h1>{{ article.title }}</h1>{% endif %}
 
+
 {% if article.type == 'post' %}
 <div class="article_meta">
-  {{ article.date|locale_date }}
-</div>
-{% endif %}
+  <ul class="dot_list">
+    <li id="article_data">Posted on {{ article.date|locale_date }}</li>
+    {% if article.tags|length > 0 %}
+    <li id="article_tags">Tagged with
 
-{% if article.tags|length > 0 %}
-<h2>Tagged with: {% for tag in article.tags|sort %}{{ tag }}, {% endfor %}</h2>
+      {#
+        Fill in a comma-separated list of tags, ensuring that the last
+        tag isn't followed by a comma.
+      #}
+      {% for tag in article.tags|sort %}
+        <a href="/tag/{{ tag }}" class="tag_{{ tag }}">{{ tag }}</a>{% if loop.index != article.tags|count %}, {% endif %}
+      {% endfor %}</li>
+    {% endif %}
+  </ul>
+</div>
 {% endif %}
 
 {{ article.content|safe }}

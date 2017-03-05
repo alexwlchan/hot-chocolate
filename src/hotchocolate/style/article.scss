@@ -11,6 +11,8 @@ article {
 
 .article_meta {
   margin-top: -10px;
-  color: $accent-grey;
+  &, a {
+    color: $accent-grey;
+  }
   font-size: $meta-font-size;
 }

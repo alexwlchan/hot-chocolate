@@ -11,6 +11,7 @@ DEFAULT_SETTINGS = {
         'header_links': {},
         'language': 'en',
         'subtitle': None,
+        'search_enabled': False,
     },
 }
 
