@@ -6,12 +6,12 @@ $accent-grey:     #999;
 $light-grey:      #eee;
 
 $max-width:       750px !default;
-$line-height:     1.25em !default;
+$line-height:     1.35em !default;
 $meta-font-size:  0.85em !default;
 $big-font-size:   2em !default;
 
 #aside_inner, #footer_inner, article,
-#subtitle, #aside_links ul {
+#subtitle {
   max-width: $max-width;
   margin-left:  auto;
   margin-right: auto;
@@ -41,6 +41,7 @@ h2 {
 
 body {
   font: 13pt $main-font-family;
+  line-height: $line-height;
 }
 
 hr {
