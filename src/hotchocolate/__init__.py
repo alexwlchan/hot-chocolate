@@ -7,9 +7,9 @@ import sys
 import dateutil.parser as dp
 import markdown
 
-if sys.version_info < (3, 3):  # noqa
+if sys.version_info < (3, 4):  # noqa
     raise ImportError(
-        'Hot Chocolate is not supported on Python versions before 3.3'
+        'Hot Chocolate is not supported on Python versions before 3.4'
     )
 
 from .css import CSSProcessor
