@@ -31,10 +31,9 @@ aside {
   // Ensure they all display in a line
   li {
     display: inline-block;
-  }
-  li:not(:first-child)::before {
-    content: " · ";
-//    padding-right: 4px;
+    &:not(:first-child)::before {
+      content: " · ";
+    }
   }
 }
 
@@ -42,4 +41,14 @@ aside {
   padding-top:    0px;
   padding-bottom: 0px;
   margin-bottom:  10px;
+  li#search {
+    float: right;
+    &::before {
+      content: "";
+    }
+    input {
+      font: 13pt $main-font-family;
+      margin-top: -3px;
+    }
+  }
 }

@@ -10,6 +10,23 @@
   {% for link in site.header_links %}
     <li><a href="{{ link }}">{{ site.header_links[link] }}</a></li>
   {% endfor %}
+
+  {#
+    TODO: This will kick in if there's any non-empty value for the
+    search_enabled setting.  Fix it to only allow boolean values.
+    #}
+  {% if site.search_enabled %}
+    <li id="search">
+      <form action="/search" action="post">
+        <input placeholder="search" name="q"></input>
+        {#
+          TODO: Replace this button with a proper search icon, make it
+          segmented with the <input>.
+          #}
+        <button>🔎&#8981;</button>
+      </form>
+    </li>
+  {% endif %}
   </ul>
 </div>
 {% endif %}
