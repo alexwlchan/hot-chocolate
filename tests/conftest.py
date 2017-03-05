@@ -3,7 +3,6 @@
 import os
 
 from hotchocolate import Site
-import hotchocolate.cli as hcli
 
 
 # TODO: Tidy this up, and don't duplicate code from cli.py
