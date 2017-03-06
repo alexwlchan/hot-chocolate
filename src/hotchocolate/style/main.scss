@@ -1,14 +1,19 @@
 // https://en.wikipedia.org/wiki/Chocolate_(color)
 $primary-color: #7B3F00 !default;
 $primary-dark: #59260B !default;
-$main-font-family: serif !default;
+
+$main-font-family:  serif !default;
+$mono-font:         Menlo, Consolas, monospace;
 
 $black:           #202020;
 $accent-grey:     #999;
 $light-grey:      #eee;
+$midtone-gray:    #ccc;
+$codeblock-gray:  #f5f5f5;
 
 $max-width:       750px !default;
 $line-height:     1.4em !default;
+$default-padding: 20px !default;
 $meta-font-size:  0.85em !default;
 $big-font-size:   2em !default;
 
@@ -22,7 +27,7 @@ $big-font-size:   2em !default;
 
 @import "aside.scss";
 @import "footer.scss";
-
+@import "code.scss";
 @import "article.scss";
 
 
