@@ -60,3 +60,44 @@ hr {
   height: 1px;
   border: 0px;
 }
+
+blockquote {
+  border-left: 4px solid $midtone-gray;
+  margin-left:  0px;
+  margin-right: 0px;
+  padding: 1px ($default-padding * 0.75);
+  color: #666;
+  font-style: italic;
+
+  p {
+    margin-top:    $default-padding * 0.5;
+    margin-bottom: $default-padding * 0.5;
+    &:first-child {
+      margin-top:    $default-padding * 0.25;
+    }
+
+    &:last-child {
+      margin-bottom: $default-padding * 0.25;
+    }
+  }
+}
+
+.footnote {
+  font-size: 1em * $scaling-factor;
+  line-height: $line-height * $scaling-factor;
+}
+
+// These rules help with the positioning of footnote markers, although
+// I'm not entirely sure how they work.
+sup, sub {
+  vertical-align: 0ex;
+  position: relative;
+}
+
+sub {
+  top: 0.8ex;
+}
+
+sup {
+  bottom: 1ex;
+}

@@ -210,7 +210,9 @@ class Article:
 
         # TODO: Use Smartypants here
         return cls(
-            content=markdown.markdown(content),
+            content=markdown.markdown(
+                content,
+                extensions=['markdown.extensions.footnotes']),
             metadata=metadata,
             path=path)
 
