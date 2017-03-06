@@ -74,11 +74,11 @@ class Site:
         # TODO: Spot if we've written multiple items with the same slug
         for post in self.posts:
             html = template.render(site=self, article=post, title=post.title)
-            self.write_html(post.out_path, html)
+            self.write_html(post.url, html)
 
         for page in self.pages:
             html = template.render(site=self, article=page, title=page.title)
-            self.write_html(page.out_path, html)
+            self.write_html(page.url, html)
 
         self._build_index()
         self._build_tag_indices()
@@ -181,7 +181,7 @@ class Article:
         self._slug = value
 
     @property
-    def out_path(self):
+    def url(self):
         return self.slug
 
     @classmethod
@@ -230,5 +230,5 @@ class Post(Article):
         super().__init__(content, metadata, path)
 
     @property
-    def out_path(self):
+    def url(self):
         return self.date.strftime('%Y/%m/') + self.slug

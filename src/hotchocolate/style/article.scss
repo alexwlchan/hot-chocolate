@@ -9,6 +9,10 @@ article {
   }
 }
 
+.article_title {
+  text-decoration: none;
+}
+
 .article_meta {
   margin-top: -10px;
   &, a {
