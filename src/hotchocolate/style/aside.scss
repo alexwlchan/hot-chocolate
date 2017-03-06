@@ -7,7 +7,7 @@ aside {
   background-color: $primary-color;
   background-size: auto 100%;
 
-  &, a, #subtitle {
+  &, a, a:visited, #subtitle {
     color: white;
   }
   a:hover {

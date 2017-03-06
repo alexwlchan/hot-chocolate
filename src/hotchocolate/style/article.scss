@@ -2,11 +2,6 @@ article {
   line-height: $line-height;
   padding-top:    3px;
   padding-bottom: 15px;
-
-  h1 {
-    color: $primary-color;
-    font-size: $big-font-size;
-  }
 }
 
 .article_title {
@@ -24,6 +19,9 @@ article {
       color: $accent-grey;
     }
   }
+  a:visited {
+    color: $primary-color;
+  }
   margin-bottom: -10px;
 }
 
@@ -34,7 +32,9 @@ article {
   }
   font-size: $meta-font-size;
   .article_permalink a {
-    color: $primary-color;
+    &, &:visited {
+      color: $primary-color;
+    }
     text-decoration: none;
   }
 }

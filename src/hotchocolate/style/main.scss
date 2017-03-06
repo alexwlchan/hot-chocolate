@@ -1,5 +1,6 @@
 // https://en.wikipedia.org/wiki/Chocolate_(color)
 $primary-color: #7B3F00 !default;
+$primary-dark: #59260B !default;
 $main-font-family: serif !default;
 
 $black:           #202020;
@@ -29,6 +30,9 @@ a {
   color: $primary-color;
   &:hover {
     text-decoration: none;
+  }
+  &:visited {
+    color: $primary-dark;
   }
 }
 
