@@ -1,13 +1,17 @@
 <article>
 
-{% if article.title %}<h1><a href="{{ article.url }}" class="article_title">{{ article.title }}</a></h1>{% endif %}
+{% if article.title %}
+<h3 class="article_title{% if article.link %} linkpost_title{% endif %}">
+  <a href="{% if article.link %}{{ article.link }}{% else %}/{{ article.url }}{% endif %}">{{ article.title }}</a>
+</h3>
+{% endif %}
 
 {% if article.type == 'post' %}
 <div class="article_meta">
   <ul class="dot_list">
-    <li id="article_data">Posted on {{ article.date|locale_date }}</li>
+    <li class="article_data">Posted on {{ article.date|locale_date }}</li>
     {% if article.tags|length > 0 %}
-    <li id="article_tags">Tagged with
+    <li class="article_tags">Tagged with
 
       {#
         Fill in a comma-separated list of tags, ensuring that the last
@@ -16,6 +20,9 @@
       {% for tag in article.tags|sort %}
         <a href="/tag/{{ tag }}" class="tag_{{ tag }}">{{ tag }}</a>{% if loop.index != article.tags|count %}, {% endif %}
       {% endfor %}</li>
+    {% endif %}
+    {% if article.link %}
+    <li class="article_permalink"><a href="{{ article.url }}">&infin;</a></li>
     {% endif %}
   </ul>
 </div>

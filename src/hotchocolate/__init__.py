@@ -184,6 +184,10 @@ class Article:
     def url(self):
         return self.slug
 
+    @property
+    def link(self):
+        return self.metadata.get('link')
+
     @classmethod
     def from_file(cls, path):
         """
