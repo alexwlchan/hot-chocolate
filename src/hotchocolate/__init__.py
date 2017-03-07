@@ -212,7 +212,11 @@ class Article:
         return cls(
             content=markdown.markdown(
                 content,
-                extensions=['markdown.extensions.footnotes']),
+                extensions=[
+                    'markdown.extensions.footnotes',
+                    'markdown.extensions.smarty',
+                ]
+            ),
             metadata=metadata,
             path=path)
 
