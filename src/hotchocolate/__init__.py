@@ -213,7 +213,9 @@ class Article:
             content=markdown.markdown(
                 content,
                 extensions=[
+                    'markdown.extensions.codehilite',
                     'markdown.extensions.footnotes',
+                    'markdown.extensions.fenced_code',
                     'markdown.extensions.smarty',
                 ]
             ),
