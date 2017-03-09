@@ -14,6 +14,7 @@ if sys.version_info < (3, 4):  # noqa
 from .css import CSSProcessor
 from .markdown import Markdown
 from .settings import SiteSettings
+from .plugins import load_plugins
 from .utils import chunks, lazy_copyfile, slugify
 from .writers import CocoaEnvironment
 
@@ -89,6 +90,7 @@ class Site:
         """
         Construct a ``Site`` instance from a folder on disk.
         """
+        load_plugins(os.path.join(os.path.abspath(path), 'plugins'))
         site = cls()
         for root, _, filenames in os.walk(os.path.join(site.path, 'posts')):
             for f in filenames:

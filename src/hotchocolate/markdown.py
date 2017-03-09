@@ -1,10 +1,14 @@
 # -*- encoding: utf-8
 
 import markdown
+from markdown.extensions import Extension
 from markdown.extensions.codehilite import CodeHiliteExtension
 from markdown.extensions.footnotes import FootnoteExtension
 from markdown.extensions.fenced_code import FencedCodeExtension
 from markdown.extensions.smarty import SmartyExtension
+from markdown.preprocessors import Preprocessor
+
+from .plugins import load_markdown_extensions
 
 
 class Markdown(markdown.Markdown):
@@ -14,25 +18,25 @@ class Markdown(markdown.Markdown):
     This sets up the necessary extensions and reset points.
     """
     def __init__(self):
-        super().__init__(
-            extensions=[
-                CodeHiliteExtension(),
-                FootnoteExtension(configs={
-                    # We may show multiple documents with footnotes on an index
-                    # page.  Ensure footnote references are globally unique.
-                    # TODO: Make footnote numbering consistent over multiple
-                    # builds even when the set of pages/posts changes.
-                    'UNIQUE_IDS': True,
+        extensions = [
+            CodeHiliteExtension(),
+            FootnoteExtension(configs={
+                # We may show multiple documents with footnotes on an index
+                # page.  Ensure footnote references are globally unique.
+                # TODO: Make footnote numbering consistent over multiple
+                # builds even when the set of pages/posts changes.
+                'UNIQUE_IDS': True,
 
-                    # Make sure that footnote markers are rendered as a text
-                    # arrow on iOS devices, not emoji.  For more info:
-                    # http://daringfireball.net/linked/2015/04/22/unicode-emoji
-                    'BACKLINK_TEXT': '&#8617;&#xFE0E;',
-                }),
-                FencedCodeExtension(),
-                SmartyExtension(),
-            ]
-        )
+                # Make sure that footnote markers are rendered as a text
+                # arrow on iOS devices, not emoji.  For more info:
+                # http://daringfireball.net/linked/2015/04/22/unicode-emoji
+                'BACKLINK_TEXT': '&#8617;&#xFE0E;',
+            }),
+            FencedCodeExtension(),
+            SmartyExtension(),
+        ] + load_markdown_extensions()
+
+        super().__init__(extensions=extensions)
 
     def convert(self, source, src_id=None):
         """
