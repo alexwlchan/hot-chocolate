@@ -5,7 +5,6 @@ import os
 import sys
 
 import dateutil.parser as dp
-import markdown
 
 if sys.version_info < (3, 4):  # noqa
     raise ImportError(
@@ -13,6 +12,7 @@ if sys.version_info < (3, 4):  # noqa
     )
 
 from .css import CSSProcessor
+from .markdown import Markdown
 from .settings import SiteSettings
 from .utils import chunks, lazy_copyfile, slugify
 from .writers import CocoaEnvironment
@@ -151,6 +151,8 @@ class Article:
     """
     Holds information about an individual article (a page or a post).
     """
+    markdown = Markdown()
+
     def __init__(self, content, metadata, path):
         self.content = content
         self.metadata = metadata
@@ -208,17 +210,8 @@ class Article:
             key, value = line.split(':', 1)
             metadata[key.strip()] = value.strip()
 
-        # TODO: Use Smartypants here
         return cls(
-            content=markdown.markdown(
-                content,
-                extensions=[
-                    'markdown.extensions.codehilite',
-                    'markdown.extensions.footnotes',
-                    'markdown.extensions.fenced_code',
-                    'markdown.extensions.smarty',
-                ]
-            ),
+            content=cls.markdown.convert(content),
             metadata=metadata,
             path=path)
 
