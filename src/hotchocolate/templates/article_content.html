@@ -9,7 +9,7 @@
 {% if article.type == 'post' %}
 <div class="article_meta">
   <ul class="dot_list">
-    <li class="article_data">Posted on {{ article.date|locale_date }}</li>
+    <li class="article_date">Posted on {{ article.date|locale_date }}</li>
     {% if article.tags|length > 0 %}
     <li class="article_tags">Tagged with
 

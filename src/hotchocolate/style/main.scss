@@ -41,12 +41,13 @@ a {
   }
 }
 
-h1, h2 {
+h1 {
   color: $primary-color;
 }
 
 h2 {
   line-height: $line-height;
+  padding-top: $default-padding / 2;
 }
 
 body {
