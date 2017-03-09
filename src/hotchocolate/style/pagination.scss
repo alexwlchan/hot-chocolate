@@ -1,0 +1,25 @@
+#pagination {
+  ul {
+    list-style-type: none;
+    padding-left: 0px !important;
+
+    // Ensure they all display in a line
+    li {
+      display: inline-block;
+    }
+  }
+
+  padding-top:    $default-padding / 2;
+  padding-bottom: $default-padding / 2;
+
+  a {
+    text-decoration: none;
+    &:visited {
+      color: $primary-color;
+    }
+  }
+
+  #pagination__next {
+    float: right;
+  }
+}

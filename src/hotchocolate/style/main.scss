@@ -18,7 +18,8 @@ $meta-font-size:  0.85em !default;
 $big-font-size:   2em !default;
 
 #aside_inner, #footer_inner, article,
-#subtitle {
+#subtitle,
+#pagination {
   max-width: $max-width;
   margin-left:  auto;
   margin-right: auto;
@@ -29,6 +30,7 @@ $big-font-size:   2em !default;
 @import "footer.scss";
 @import "code.scss";
 @import "article.scss";
+@import "pagination.scss";
 
 
 a {

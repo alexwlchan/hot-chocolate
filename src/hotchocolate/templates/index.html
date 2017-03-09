@@ -11,4 +11,5 @@
   {% include "article_content.html" %}
   {% if loop.index != articles|count %}<hr/>{% endif %}
   {% endfor %}
+  {% include "pagination.html" %}
 {% endblock %}

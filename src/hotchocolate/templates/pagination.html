@@ -1,0 +1,18 @@
+{% if pageset and (pageset.prev or pageset.next) %}
+<hr/>
+<div id="pagination">
+  <ul>
+    <li id="pagination__previous">
+      {% if pageset.prev %}
+      <a href="{{ pageset.prev }}">&larr; Newer posts</a>
+      {% endif %}
+    </li>
+
+    <li id="pagination__next">
+      {% if pageset.next %}
+      <a href="{{ pageset.next }}">Older posts &rarr;</a>
+      {% endif %}
+    </li>
+  </ul>
+</div>
+{% endif %}

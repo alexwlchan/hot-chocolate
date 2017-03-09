@@ -15,9 +15,12 @@ from .css import CSSProcessor
 from .markdown import Markdown
 from .settings import SiteSettings
 from .plugins import load_plugins
-from .utils import chunks, lazy_copyfile, slugify
-from .writers import CocoaEnvironment
+from .utils import lazy_copyfile, slugify
+from .writers import CocoaEnvironment, Pagination
 
+
+# TODO: Make this a setting
+PAGE_SIZE = 10
 
 MARKDOWN_EXTENSIONS = ('.txt', '.md', '.mdown', '.markdown')
 
@@ -111,19 +114,20 @@ class Site:
 
         if posts is None:
             posts = self.posts
-
         posts = sorted(posts, key=lambda x: x.date, reverse=True)
-        for pageno, p in enumerate(chunks(posts, 5), start=1):
-            html = template.render(site=self, articles=p, title=title)
 
-            if pageno == 1:
-                slug = '/%s/' % prefix
-            else:
-                if prefix:
-                    slug = '/%s/%d' % (prefix, pageno)
-                else:
-                    slug = '/page/%d' % pageno
-            self.write_html(slug, html)
+        pagination = Pagination(
+            posts=posts, page_size=PAGE_SIZE, prefix=prefix
+        )
+
+        for pageset in pagination:
+            html = template.render(
+                site=self,
+                articles=pageset.pop('articles'),
+                title=title,
+                pageset=pageset
+            )
+            self.write_html(pageset.pop('slug'), html)
 
     def _build_tag_indices(self):
         tags = collections.defaultdict(list)
