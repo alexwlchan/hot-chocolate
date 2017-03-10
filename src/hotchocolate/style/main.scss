@@ -9,7 +9,6 @@ $black:           #202020;
 $accent-grey:     #999;
 $light-grey:      #eee;
 $midtone-gray:    #ccc;
-$codeblock-gray:  #f5f5f5;
 
 $max-width:       750px !default;
 $line-height:     1.4em !default;
@@ -65,24 +64,17 @@ hr {
 }
 
 blockquote {
-  border-left: 4px solid $midtone-gray;
+//  color: $primary-dark;
+  border-left: 5px solid rgba(red($primary-color), green($primary-color), blue($primary-color), 0.8);
+  background-color: rgba(red($primary-color), green($primary-color), blue($primary-color), 0.1);
   margin-left:  0px;
   margin-right: 0px;
-  padding: 1px ($default-padding * 0.75);
-  color: #666;
+  padding: 1px $default-padding * 0.75;
+//  color: $primary-color;
   font-style: italic;
+  font-size: 0.95em;
+}
 
-  p {
-    margin-top:    $default-padding * 0.5;
-    margin-bottom: $default-padding * 0.5;
-    &:first-child {
-      margin-top:    $default-padding * 0.25;
-    }
-
-    &:last-child {
-      margin-bottom: $default-padding * 0.25;
-    }
-  }
 }
 
 .footnote {

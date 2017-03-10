@@ -20,10 +20,20 @@ pre {
 }
 
 pre, code {
-  border: 1px solid $midtone-gray;
-  border-radius: 4px;
+//  border: 1px solid $midtone-gray;
+//  border-radius: 4px;
   overflow-x: auto;
-  background-color: $codeblock-gray;
+  background-color: $light-grey;
+}
+
+code {
+  padding: 1.5px 3px;
+}
+
+pre {
+  border-radius: 0px;
+  border: none;
+  border-left: 5px solid $midtone-gray;
 }
 
 @import "pygments.scss";
