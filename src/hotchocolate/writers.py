@@ -112,5 +112,5 @@ class CocoaEnvironment(object):
 
         self.env.filters['locale_date'] = locale_date
 
-    def get_template(self, *args, **kwargs):
-        return self.env.get_template(*args, **kwargs)
+    def get_template(self, path):
+        return self.env.get_template(path)
