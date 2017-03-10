@@ -51,6 +51,7 @@ class Site:
         self.settings = SiteSettings(self.path)
 
         self.posts = []
+        self._tagged_posts = collections.defaultdict(list)
         self.pages = []
         self.env = CocoaEnvironment(self.path)
         self.css_proc = CSSProcessor(self.path)
@@ -98,7 +99,10 @@ class Site:
         for root, _, filenames in os.walk(os.path.join(site.path, 'posts')):
             for f in filenames:
                 if os.path.splitext(f)[1].lower() in MARKDOWN_EXTENSIONS:
-                    site.posts.append(Post.from_file(os.path.join(root, f)))
+                    p = Post.from_file(os.path.join(root, f))
+                    for t in p.tags:
+                        site._tagged_posts[t].append(p)
+                    site.posts.append(p)
 
         for root, _, filenames in os.walk(os.path.join(site.path, 'pages')):
             for f in filenames:
@@ -123,18 +127,14 @@ class Site:
         for pageset in pagination:
             html = template.render(
                 site=self,
-                articles=pageset.pop('articles'),
+                articles=pageset['articles'],
                 title=title,
                 pageset=pageset
             )
-            self.write_html(pageset.pop('slug'), html)
+            self.write_html(pageset['slug'], html)
 
     def _build_tag_indices(self):
-        tags = collections.defaultdict(list)
-        for p in self.posts:
-            for t in p.tags:
-                tags[t].append(p)
-        for t, posts in tags.items():
+        for t, posts in self._tagged_posts.items():
             self._build_index(
                 posts=posts,
                 prefix='/tag/%s' % t,
