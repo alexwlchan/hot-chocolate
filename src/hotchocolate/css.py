@@ -89,16 +89,9 @@ class CSSMinimiser(mp.Processor):
         return url
 
     def render_html(self, html_str, css_str):
-        # This step removes any CSS selectors that aren't used in the
-        # provided HTML
-        self.inlines = []
-        self.process(html_str.replace(
-            '<!-- hc_css_include -->', '<style>%s</style>' % css_str
-        ))
+        self.process('<style>%s</style><body>%s</body>' % (
+            css_str, html_str.split('<body>')[1].split('</body>')[0]))
         css_str = self.inlines[0].after
-
-        # Now minify the CSS
-        css_str = csscompressor.compress(css_str)
 
         # Finally, substitute the final CSS string and return the HTML
         return html_str.replace(
@@ -111,15 +104,8 @@ class CSSProcessor:
     Entry point for the CSS generator.
     """
     def __init__(self, path):
-        self.base_css = self.get_base_css(path)
-        self.minifier = CSSMinimiser()
-
-    def insert_css_for_page(self, html_str):
-        """
-        Given the HTML contents of a page, fill in the minimal set of CSS
-        required to render the page.
-        """
-        return self.minifier.render_html(html_str, self.base_css)
+        # Minify the CSS so we don't have to deal with comments or whitespace
+        self.base_css = csscompressor.compress(self.get_base_css(path))
 
     def get_base_css(self, path):
         """
@@ -156,3 +142,10 @@ class CSSProcessor:
         css_str = _get_consolidated_css(css_str)
 
         return css_str
+
+    def insert_css_for_page(self, html_str):
+        """
+        Given the HTML contents of a page, fill in the minimal set of CSS
+        required to render the page.
+        """
+        return CSSMinimiser().render_html(html_str, self.base_css)
