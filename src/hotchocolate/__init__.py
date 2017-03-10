@@ -169,7 +169,10 @@ class Article:
         self.slug = metadata.get('slug')
 
         try:
-            self.tags = [t.strip() for t in metadata.pop('tags').split(',')]
+            self.tags = sorted([
+                t.strip()
+                for t in metadata.pop('tags').split(',')
+                if t.strip()])
         except KeyError:
             self.tags = []
 
