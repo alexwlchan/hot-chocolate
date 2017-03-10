@@ -1,12 +1,10 @@
 # -*- encoding: utf-8
 
 import markdown
-from markdown.extensions import Extension
 from markdown.extensions.codehilite import CodeHiliteExtension
 from markdown.extensions.footnotes import FootnoteExtension
 from markdown.extensions.fenced_code import FencedCodeExtension
 from markdown.extensions.smarty import SmartyExtension
-from markdown.preprocessors import Preprocessor
 
 from .plugins import load_markdown_extensions
 
