@@ -28,6 +28,11 @@
 </div>
 {% endif %}
 
-{{ article.content|safe }}
+{% if is_index and '<!-- summary -->' in article.content %}
+  {{ article.content.split('<!-- summary -->')[0]|safe }}
+  <p><a href="/{{ article.url }}" class="continue_reading">Continue reading</a></p>
+{% else %}
+  {{ article.content|safe }}
+{% endif %}
 
 </article>

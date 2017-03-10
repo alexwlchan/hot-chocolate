@@ -7,9 +7,11 @@
   </article>
   <hr/>
   {% endif %}
-  {% for article in articles %}
-  {% include "article_content.html" %}
-  {% if loop.index != articles|count %}<hr/>{% endif %}
-  {% endfor %}
+  {% with is_index = True %}
+    {% for article in articles %}
+      {% include "article_content.html" %}
+      {% if loop.index != articles|count %}<hr/>{% endif %}
+    {% endfor %}
+  {% endwith %}
   {% include "pagination.html" %}
 {% endblock %}
