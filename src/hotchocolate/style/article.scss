@@ -5,15 +5,21 @@ article {
 }
 
 .article_title {
-  &:not(.linkpost_title) {
-    font-size: 1.8em;
-    line-height: 1.45em;
-    a {
-      text-decoration: none;
-    }
+  font-size: 1.8em;
+  line-height: 1.45em;
+  a {
+    text-decoration: none;
   }
   &.linkpost_title {
+    font-size: 1.17em;
+    line-height: 1.35em;
     padding-top: 12px;
+    a {
+      text-decoration: underline;
+      &:hover {
+        text-decoration: none;
+      }
+    }
     &::after {
       content: " →";
       color: $accent-grey;
