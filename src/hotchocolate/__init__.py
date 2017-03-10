@@ -5,6 +5,7 @@ import os
 import sys
 
 import dateutil.parser as dp
+import htmlmin
 
 if sys.version_info < (3, 4):  # noqa
     raise ImportError(
@@ -67,6 +68,7 @@ class Site:
         os.makedirs(os.path.join(self.out_path, slug), exist_ok=True)
 
         html_str = self.css_proc.insert_css_for_page(html_str)
+        html_str = htmlmin.minify(html_str)
 
         with open(os.path.join(self.out_path, slug, 'index.html'), 'w') as f:
             f.write(html_str)
