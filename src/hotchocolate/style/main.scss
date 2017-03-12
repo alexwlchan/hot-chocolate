@@ -65,14 +65,19 @@ hr {
 
 blockquote {
 //  color: $primary-dark;
-  border-left: 5px solid rgba(red($primary-color), green($primary-color), blue($primary-color), 0.8);
-  background-color: rgba(red($primary-color), green($primary-color), blue($primary-color), 0.1);
+  border-left: 5px solid $midtone-gray;
+  background-color: $light-grey;
+//  border-left: 5px solid rgba(red($primary-color), green($primary-color), blue($primary-color), 0.8);
+//  background-color: rgba(red($primary-color), green($primary-color), blue($primary-color), 0.1);
   margin-left:  0px;
   margin-right: 0px;
   padding: 1px $default-padding * 0.75;
 //  color: $primary-color;
-  font-style: italic;
+//  font-style: italic;
   font-size: 0.95em;
+  code {
+    background-color: #ddd;
+  }
 }
 
 }
