@@ -17,6 +17,7 @@ class Markdown(markdown.Markdown):
     """
     def __init__(self):
         extensions = [
+            SmartyExtension(),
             CodeHiliteExtension(),
             FootnoteExtension(configs={
                 # We may show multiple documents with footnotes on an index
@@ -31,7 +32,6 @@ class Markdown(markdown.Markdown):
                 'BACKLINK_TEXT': '&#8617;&#xFE0E;',
             }),
             FencedCodeExtension(),
-            SmartyExtension(),
         ] + load_markdown_extensions()
 
         super().__init__(extensions=extensions)
