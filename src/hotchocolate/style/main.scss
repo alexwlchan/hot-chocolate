@@ -78,8 +78,16 @@ blockquote {
   code {
     background-color: #ddd;
   }
+  line-height: $line-height * 0.95;
 }
 
+// Images never expand beyond the article bounds, and are centred when
+// they're too small.
+img, video {
+  max-width: 100%;
+  margin-left:  auto;
+  margin-right: auto;
+  display: block;
 }
 
 .footnote {

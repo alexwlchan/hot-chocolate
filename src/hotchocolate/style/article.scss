@@ -21,7 +21,7 @@ article {
       }
     }
     &::after {
-      content: " →";
+      content: "\a0→";
       color: $accent-grey;
     }
   }
@@ -29,6 +29,13 @@ article {
     color: $primary-color;
   }
   margin-bottom: -10px;
+}
+
+.continue_reading {
+  font-weight: bold;
+  &::after {
+    content: "\a0→";
+  }
 }
 
 .article_meta {

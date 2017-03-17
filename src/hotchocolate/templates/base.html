@@ -21,7 +21,7 @@
   <!-- Favicons -->
   <!-- RSS feeds -->
 
-  <title>{% if title %}{{ title }} &mdash; {% endif %}{{ site.name }}</title>
+  <title>{% if title %}{{ title|striptags }} &mdash; {% endif %}{{ site.name }}</title>
 </head>
 
 <body>
