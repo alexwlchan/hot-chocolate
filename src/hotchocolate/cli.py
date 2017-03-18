@@ -3,12 +3,14 @@
 import os
 import shutil
 import sys
+import time
 
 import click
 import docker
 import requests
 
 from . import Site
+from .logging import success
 from .settings import create_new_settings
 
 
@@ -22,8 +24,10 @@ def build():
     """
     Take the content folder and build it.
     """
-    site = Site.from_folder('content')
+    start = time.time()
+    site = Site.from_folder(os.curdir)
     site.build()
+    success('Site build completed in %.2f seconds', time.time() - start)
 
 
 @cli.command('clean', help='remove the generated HTML')

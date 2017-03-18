@@ -13,6 +13,7 @@ if sys.version_info < (3, 4):  # noqa
     )
 
 from .css import CSSProcessor
+from .logging import info
 from .markdown import Markdown
 from .settings import SiteSettings
 from .plugins import load_plugins
@@ -101,7 +102,11 @@ class Site:
         for root, _, filenames in os.walk(os.path.join(site.path, 'posts')):
             for f in filenames:
                 if os.path.splitext(f)[1].lower() in MARKDOWN_EXTENSIONS:
-                    p = Post.from_file(os.path.join(root, f))
+                    pth = os.path.join(root, f)
+                    info(
+                        'Reading post from file %s',
+                        pth.replace(site.path, '').lstrip('/'))
+                    p = Post.from_file(pth)
                     for t in p.tags:
                         site._tagged_posts[t].append(p)
                     site.posts.append(p)
@@ -109,7 +114,11 @@ class Site:
         for root, _, filenames in os.walk(os.path.join(site.path, 'pages')):
             for f in filenames:
                 if os.path.splitext(f)[1].lower() in MARKDOWN_EXTENSIONS:
-                    site.pages.append(Page.from_file(os.path.join(root, f)))
+                    pth = os.path.join(root, f)
+                    info(
+                        'Reading page from file %s',
+                        pth.replace(site.path, '').lstrip('/'))
+                    site.pages.append(Page.from_file(pth))
 
         return site
 

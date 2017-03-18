@@ -20,12 +20,13 @@ it as efficient as possible:
 import html
 import os
 import re
-import warnings
 
 import csscompressor
 import mincss.processor as mp
 import requests
 import scss
+
+from .logging import warning
 
 
 def _get_consolidated_css(css_str):
@@ -75,7 +76,7 @@ def _get_consolidated_css(css_str):
 
         return encoded_css
     except Exception as exc:
-        warnings.warn('Unable to minify CSS with CodeBeautifier: %s' % exc)
+        warning('Unable to minify CSS with CodeBeautifier: %s' % exc)
         return css_str
 
 
