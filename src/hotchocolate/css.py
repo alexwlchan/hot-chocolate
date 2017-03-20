@@ -106,53 +106,50 @@ class CSSProcessor:
     """
     def __init__(self, path):
         # Minify the CSS so we don't have to deal with comments or whitespace
+        self.scss_compiler = scss.Compiler(search_path=[
+            os.path.join('style'),
+            os.path.join(os.path.dirname(__file__), 'style')
+        ])
+        self.base_scss = self.get_base_scss(path)
         self.base_css = csscompressor.compress(self.get_base_css(path))
 
     def get_base_scss(self, path):
         """
         Get the base site SCSS.
         """
-        if not hasattr(self, '_base_scss'):
-            scss_compiler = scss.Compiler(search_path=[
-                os.path.join('style'),
-                os.path.join(os.path.dirname(__file__), 'style')
-            ])
+        # First we get the theme from the package itself.  This is kept
+        # in ``style/main.scss`` within the package directory.
+        # TODO: Is the `style` directory included in the package manifest?
+        scss_str = open(
+            os.path.join(os.path.dirname(__file__), 'style', 'main.scss')
+        ).read()
 
-            # First we get the theme from the package itself.  This is kept
-            # in ``style/main.scss`` within the package directory.
-            # TODO: Is the `style` directory included in the package manifest?
-            scss_str = open(
-                os.path.join(os.path.dirname(__file__), 'style', 'main.scss')
+        # Next look for ``style/variables.scss`` in the site directory, and
+        # try to add that.  If it doesn't exist, use the base theme.
+        try:
+            variables_scss = open(
+                os.path.join(path, 'style', 'variables.scss')
             ).read()
+            scss_str = variables_scss + scss_str
+        except FileNotFoundError:
+            pass
 
-            # Next look for ``style/variables.scss`` in the site directory, and
-            # try to add that.  If it doesn't exist, use the base theme.
-            try:
-                variables_scss = open(
-                    os.path.join(path, 'style', 'variables.scss')
-                ).read()
-                scss_str = variables_scss + scss_str
-            except FileNotFoundError:
-                pass
+        try:
+            custom_scss = open(
+                os.path.join(path, 'style', 'custom.scss')
+            ).read()
+            scss_str = scss_str + custom_scss
+        except FileNotFoundError:
+            pass
 
-            try:
-                custom_scss = open(
-                    os.path.join(path, 'style', 'custom.scss')
-                ).read()
-                scss_str = scss_str + custom_scss
-            except FileNotFoundError:
-                pass
-
-            self._base_scss = scss_str
-
-        return self._base_scss
+        return scss_str
 
     def get_base_css(self, path):
         """
         Get the base site CSS, based on SCSS files in the package theme
         and anything in the ``style`` directory.
         """
-        css_str = scss_compiler.compile_string(self.get_base_css(path))
+        css_str = self.scss_compiler.compile_string(self.base_scss)
 
         # Loading the custom theme may have introduced redundant selectors
         # (or heck, just carelessness from the person who wrote the CSS).
