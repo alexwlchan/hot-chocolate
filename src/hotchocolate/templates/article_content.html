@@ -1,9 +1,9 @@
 <article>
 
 {% if article.title %}
-<h3 class="article_title{% if article.link %} linkpost_title{% endif %}">
+<h1 class="article_title{% if article.link %} linkpost_title{% endif %}">
   <a href="{% if article.link %}{{ article.link }}{% else %}/{{ article.url }}{% endif %}">{{ article.title|safe }}</a>
-</h3>
+</h1>
 {% endif %}
 
 {% if article.type == 'post' %}
@@ -18,7 +18,7 @@
         tag isn't followed by a comma.
       #}
       {% for tag in article.tags|sort %}
-        <a href="/tag/{{ tag }}" class="tag_{{ tag }}">{{ tag }}</a>{% if loop.index != article.tags|count %}, {% endif %}
+        <a href="/tag/{{ tag }}/" class="tag_{{ tag }}">{{ tag }}</a>{% if loop.index != article.tags|count %}, {% endif %}
       {% endfor %}</li>
     {% endif %}
     {% if article.link %}
