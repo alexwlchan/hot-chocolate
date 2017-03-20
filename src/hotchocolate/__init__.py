@@ -1,7 +1,8 @@
 # -*- encoding: utf-8
 
 import collections
-from datetime import datetime
+from datetime import date, datetime
+import itertools
 import os
 import re
 import sys
@@ -96,9 +97,11 @@ class Site:
             self.write_html(page.url, html)
 
         self._build_feeds()
-        # self._build_index()
-        # self._build_tag_indices()
-        # self._copy_static_files()
+        self._build_index()
+        self._build_tag_indices()
+        self._copy_static_files()
+        self._build_date_archives()
+        self._build_archive()
 
     @classmethod
     def from_folder(cls, path):
@@ -194,6 +197,28 @@ class Site:
                 pageset=pageset
             )
             self.write_html(pageset['slug'], html)
+
+    def _build_date_archives(self):
+        def get_month(p):
+            return date(p.date.year, p.date.month, 1)
+        for m, posts in itertools.groupby(self.posts, get_month):
+            self._build_index(
+                posts=posts,
+                prefix='/%04d/%02d' % (m.year, m.month),
+                title=m.strftime('Posts from %B %Y'))
+
+    def _build_archive(self):
+        template = self.env.get_template('archive.html')
+        def get_year(p):
+            return p.date.year
+        html = template.render(
+            site=self,
+            article_groups=itertools.groupby(
+                sorted(self.posts, key=lambda p: p.date, reverse=True),
+                get_year),
+            title='Archives'
+        )
+        self.write_html('/archives/', html)
 
     def _build_tag_indices(self):
         for t, posts in self._tagged_posts.items():
