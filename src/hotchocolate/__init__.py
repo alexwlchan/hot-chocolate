@@ -1,11 +1,14 @@
 # -*- encoding: utf-8
 
 import collections
+from datetime import datetime
 import os
+import re
 import sys
 
 import dateutil.parser as dp
 import htmlmin
+from feedgenerator import Atom1Feed, get_tag_uri
 
 if sys.version_info < (3, 4):  # noqa
     raise ImportError(
@@ -41,11 +44,15 @@ class Site:
     Holds the settings for an individual site.
     """
 
-    name = _SiteSettingDescriptor('site', 'name')
-    header_links = _SiteSettingDescriptor('site', 'header_links')
-    language = _SiteSettingDescriptor('site', 'language')
-    subtitle = _SiteSettingDescriptor('site', 'subtitle')
-    search_enabled = _SiteSettingDescriptor('site', 'search_enabled')
+    name            = _SiteSettingDescriptor('site', 'name')
+    url             = _SiteSettingDescriptor('site', 'url')
+    header_links    = _SiteSettingDescriptor('site', 'header_links')
+    language        = _SiteSettingDescriptor('site', 'language')
+    subtitle        = _SiteSettingDescriptor('site', 'subtitle')
+    search_enabled  = _SiteSettingDescriptor('site', 'search_enabled')
+    author          = _SiteSettingDescriptor('site', 'author')
+    author_email    = _SiteSettingDescriptor('site', 'author_email')
+    description     = _SiteSettingDescriptor('site', 'description')
 
     def __init__(self):
         self.path = os.path.abspath(os.curdir)
@@ -88,9 +95,10 @@ class Site:
             html = template.render(site=self, article=page, title=page.title)
             self.write_html(page.url, html)
 
-        self._build_index()
-        self._build_tag_indices()
-        self._copy_static_files()
+        self._build_feeds()
+        # self._build_index()
+        # self._build_tag_indices()
+        # self._copy_static_files()
 
     @classmethod
     def from_folder(cls, path):
@@ -121,6 +129,49 @@ class Site:
                     site.pages.append(Page.from_file(pth))
 
         return site
+
+    def _build_feeds(self):
+        feed_kwargs = {
+            'title': self.name,
+            'link': self.url + '/feeds/all.atom.xml',
+            'description': self.description,
+            'author_name': self.author,
+            'author_email': self.author_email,
+        }
+        feed = Atom1Feed(**feed_kwargs)
+
+        for post in reversed(self.posts):
+            post_kwargs = {
+                'title': post.title,
+                'link': post.url,
+                'pubdate': post.date,
+                'content': post.content,
+            }
+            if post.link is not None:
+                post_kwargs['link'] = post.link
+            if 'summary' in post.metadata:
+                post_kwargs['description'] = post.metadata['summary']
+            else:
+                post_kwargs['description'] = post_kwargs['content']
+            post_kwargs['unique_id'] = get_tag_uri(post_kwargs['link'], post.date)
+
+            if '<blockquote class="update">' in post.content:
+                update_strings = re.findall(
+                    r'Update, [0-9]+ [A-Z][a-z]+ [0-9]{4}', post.content
+                )
+                updated = max([
+                    datetime.strptime(u, 'Update, %d %B %Y')
+                    for u in update_strings
+                ])
+                post_kwargs['updateddate'] = updated
+
+            feed.add_item(**post_kwargs)
+
+        feed_dir = os.path.join(self.out_path, 'feeds')
+        os.makedirs(feed_dir, exist_ok=True)
+        feed.write(
+            open(os.path.join(feed_dir, 'all.atom.xml'), 'w'),
+            encoding='utf-8')
 
     def _build_index(self, posts=None, prefix='', title=None):
         # TODO: Make this more generic

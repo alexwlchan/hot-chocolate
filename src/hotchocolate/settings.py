@@ -12,6 +12,9 @@ DEFAULT_SETTINGS = {
         'language': 'en',
         'subtitle': None,
         'search_enabled': False,
+        'author': None,
+        'author_email': None,
+        'url': None,
     },
 }
 
