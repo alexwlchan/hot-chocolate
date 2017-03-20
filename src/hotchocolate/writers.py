@@ -34,13 +34,13 @@ class Pagination:
             else:
                 prefix = self.prefix or 'page'
                 prev_ = slug
-                slug = '/%s/%d' % (prefix, pageno)
+                slug = '/%s/%d/' % (prefix, pageno)
 
             if self.size * pageno >= len(self.posts):
                 next_ = None
             else:
                 prefix = self.prefix or 'page'
-                next_ = '/%s/%d' % (prefix, pageno + 1)
+                next_ = '/%s/%d/' % (prefix, pageno + 1)
 
             yield {
                 'slug': slug,
