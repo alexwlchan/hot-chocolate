@@ -1,13 +1,12 @@
 Release History
 ===============
 
-1.0.3-dev
----------
+2.0.0 (2017-03-1)
+-----------------
 
-Bugfixes:
-
--  In the list of tags on a post, the last tag is no longer followed by an
-   extraneous comma.
+Here "2.0" is really a count of the number of websites I have using this tool,
+rather than a reflection of quality.  Lots of new stuff added since 1.0.2,
+but mostly untested and documented (note to self: fix that!).
 
 1.0.2 (2017-02-26)
 ------------------
