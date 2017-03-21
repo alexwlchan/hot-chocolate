@@ -112,7 +112,7 @@ class Site:
         site = cls()
         for root, _, filenames in os.walk(os.path.join(site.path, 'posts')):
             for f in filenames:
-                if os.path.splitext(f)[1].lower() in MARKDOWN_EXTENSIONS:
+                if f.lower().endswith(MARKDOWN_EXTENSIONS):
                     pth = os.path.join(root, f)
                     info(
                         'Reading post from file %s',
@@ -124,7 +124,7 @@ class Site:
 
         for root, _, filenames in os.walk(os.path.join(site.path, 'pages')):
             for f in filenames:
-                if os.path.splitext(f)[1].lower() in MARKDOWN_EXTENSIONS:
+                if f.lower().endswith(MARKDOWN_EXTENSIONS):
                     pth = os.path.join(root, f)
                     info(
                         'Reading page from file %s',
