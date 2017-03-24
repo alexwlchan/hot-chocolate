@@ -47,6 +47,7 @@ setup(
         'Jinja2>=2.9.5,<3',
         'Markdown>=2.6.8,<3',
         'mincss>=0.11.2,<0.12',
+        'Pygments>=2.2.0,<3',
         'pyScss>=1.3.5,<2',
         'unidecode>=0.04.20,<0.05',
     ],
