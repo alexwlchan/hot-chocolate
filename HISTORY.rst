@@ -1,8 +1,21 @@
 Release History
 ===============
 
-2.0.0 (2017-03-1)
------------------
+2.0.1 (2017-03-24)
+------------------
+
+Features
+
+-  A rudimentary ``newpost`` command for creating a new post with some prefilled
+   metadata.
+
+Bugfixes:
+
+-  Add the missing Pygments dependency to syntax highlighting is applied to
+   code blocks.
+
+2.0.0 (2017-03-21)
+------------------
 
 Here "2.0" is really a count of the number of websites I have using this tool,
 rather than a reflection of quality.  Lots of new stuff added since 1.0.2,
