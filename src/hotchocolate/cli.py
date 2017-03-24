@@ -1,5 +1,6 @@
 # -*- encoding: utf-8
 
+import datetime
 import os
 import shutil
 import sys
@@ -12,11 +13,32 @@ import requests
 from . import Site
 from .logging import success
 from .settings import create_new_settings
+from .utils import slugify
 
 
 @click.group()
 def cli():
     pass
+
+
+@cli.command('newpost', help='create a new post')
+@click.option('--title', help='title of the new post')
+def new_post(title):
+    """
+    Create a new post.
+    """
+    now = datetime.datetime.now()
+    post_dir = os.path.join('posts', str(now.year))
+    os.makedirs(post_dir, exist_ok=True)
+
+    path = os.path.join(post_dir, '%d-%02d-%s.md' % (
+        now.year, now.month, slugify(title)
+    ))
+    with open(path, 'x') as f:
+        f.write('title:  %s\ndate:   %s\n\nPost content goes here\n' % (
+            title, now.strftime('%Y-%m-%d %H:%M')
+        ))
+    os.system('open "%s"' % path)
 
 
 @cli.command('build', help='(re)build the HTML for the website')
