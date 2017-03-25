@@ -75,8 +75,11 @@ blockquote {
 //  color: $primary-color;
 //  font-style: italic;
   font-size: 0.95em;
-  code {
+  code, pre {
     background-color: #ddd;
+  }
+  pre {
+    border-color: #aaa;
   }
   line-height: $line-height * 0.95;
 }
