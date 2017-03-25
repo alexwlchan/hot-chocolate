@@ -1,10 +1,18 @@
 Release History
 ===============
 
+2.0.2 (2017-03-25)
+------------------
+
+Bugfixes:
+
+-  Stop builds from hanging forever on slow connections.
+-  Make ``<pre>`` blocks distinguishable when used in ``<blockquote>``.
+
 2.0.1 (2017-03-24)
 ------------------
 
-Features
+Features:
 
 -  A rudimentary ``newpost`` command for creating a new post with some prefilled
    metadata.
