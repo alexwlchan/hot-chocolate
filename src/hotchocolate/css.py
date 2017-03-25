@@ -39,7 +39,8 @@ def _get_consolidated_css(css_str):
     try:
         r = requests.post(
             'http://www.codebeautifier.com/',
-            data={'css_text': css_str}
+            data={'css_text': css_str},
+            timeout=2
         )
         encoded_css = r.text.split('<code id="code">')[1].split('</code>')[0]
         encoded_css = re.sub(r'<[^>]+>', r'', encoded_css)
