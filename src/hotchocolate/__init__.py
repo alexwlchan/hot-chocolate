@@ -20,6 +20,7 @@ from .css import CSSProcessor
 from .logging import info
 from .markdown import Markdown
 from .settings import SiteSettings
+from .readers import list_page_files, list_post_files
 from .plugins import load_plugins
 from .utils import lazy_copyfile, slugify
 from .writers import CocoaEnvironment, Pagination
@@ -27,8 +28,6 @@ from .writers import CocoaEnvironment, Pagination
 
 # TODO: Make this a setting
 PAGE_SIZE = 10
-
-MARKDOWN_EXTENSIONS = ('.txt', '.md', '.mdown', '.markdown')
 
 
 class _SiteSettingDescriptor:
@@ -110,26 +109,19 @@ class Site:
         """
         load_plugins(os.path.join(os.path.abspath(path), 'plugins'))
         site = cls()
-        for root, _, filenames in os.walk(os.path.join(site.path, 'posts')):
-            for f in filenames:
-                if f.lower().endswith(MARKDOWN_EXTENSIONS):
-                    pth = os.path.join(root, f)
-                    info(
-                        'Reading post from file %s',
-                        pth.replace(site.path, '').lstrip('/'))
-                    p = Post.from_file(pth)
-                    for t in p.tags:
-                        site._tagged_posts[t].append(p)
-                    site.posts.append(p)
+        for path in list_post_files(site.path):
+            info('Reading post from file %s',
+                path.replace(site.path, '').lstrip('/'))
+            p = Post.from_file(path)
+            for t in p.tags:
+                site._tagged_posts[t].append(p)
+            site.posts.append(p)
 
-        for root, _, filenames in os.walk(os.path.join(site.path, 'pages')):
-            for f in filenames:
-                if f.lower().endswith(MARKDOWN_EXTENSIONS):
-                    pth = os.path.join(root, f)
-                    info(
-                        'Reading page from file %s',
-                        pth.replace(site.path, '').lstrip('/'))
-                    site.pages.append(Page.from_file(pth))
+        for path in list_page_files(site.path):
+            info(
+                'Reading page from file %s',
+                path.replace(site.path, '').lstrip('/'))
+            site.pages.append(Page.from_file(path))
 
         return site
 
