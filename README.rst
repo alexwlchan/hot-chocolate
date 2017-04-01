@@ -6,6 +6,18 @@ and is designed for building very lightweight sites.
 
 .. image:: https://github.com/alexwlchan/hot-chocolate/raw/master/hotchocolate.jpg
 
+Disclaimer
+**********
+
+You should consider this as alpha-quality software at best.  Although I run
+several sites with it, it's still **user-unfriendly, undocumented and rough
+around the edges**.  If you want a static site generator, look at something
+like `Jekyll <http://jekyllrb.com/>`_ or
+`Pelican <https://blog.getpelican.com/>`_.
+
+I'd like to document it properly and make it user-friendly, but for now it's
+more like a melting pot for my ideas about static site generators.
+
 Installation
 ************
 
