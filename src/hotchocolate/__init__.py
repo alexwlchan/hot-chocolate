@@ -146,7 +146,7 @@ class Site:
         for post in reversed(self.posts):
             post_kwargs = {
                 'title': post.title,
-                'link': post.url,
+                'link': self.url + post.url,
                 'pubdate': post.date,
                 'content': post.content,
             }
