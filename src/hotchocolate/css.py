@@ -75,6 +75,14 @@ def _get_consolidated_css(css_str):
             encoded_css
         )
 
+        # It also scrambles expressions of the form `calc(x + y)` by
+        # taking the spaces around the + sign.
+        encoded_css = re.sub(
+            r'calc\(([0-9%pxem]+)\+([0-9%pxem]+)\)',
+            r'calc(\1 + \2)',
+            encoded_css
+        )
+
         return encoded_css
     except Exception as exc:
         warning('Unable to minify CSS with CodeBeautifier: %s' % exc)
