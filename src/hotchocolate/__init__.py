@@ -18,9 +18,9 @@ if sys.version_info < (3, 4):  # noqa
         'Hot Chocolate is not supported on Python versions before 3.4'
     )
 
+from . import markdown
 from .css import CSSProcessor
 from .logging import info
-from .markdown import Markdown
 from .settings import SiteSettings
 from .readers import list_page_files, list_post_files
 from .plugins import load_plugins
@@ -238,15 +238,13 @@ class Article:
     """
     Holds information about an individual article (a page or a post).
     """
-    markdown = Markdown()
-
     def __init__(self, content, metadata, path):
         self.content = content
         self.metadata = metadata
         self.path = path
 
         # TODO: better error handling
-        self.title = metadata.pop('title')
+        self.title = markdown.convert_markdown(metadata.pop('title'))
         self.slug = metadata.get('slug')
 
         try:
@@ -301,7 +299,7 @@ class Article:
             metadata[key.strip()] = value.strip()
 
         return cls(
-            content=cls.markdown.convert(content),
+            content=markdown.convert_markdown(content),
             metadata=metadata,
             path=path)
 
