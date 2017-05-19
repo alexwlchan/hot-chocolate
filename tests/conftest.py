@@ -1,8 +1,8 @@
 # -*- encoding: utf-8
 
-import os
+# import os
 
-from hotchocolate import Site
+# from hotchocolate import Site
 
 
 # TODO: Tidy this up, and don't duplicate code from cli.py

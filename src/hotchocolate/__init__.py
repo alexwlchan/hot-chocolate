@@ -1,5 +1,7 @@
 # -*- encoding: utf-8
 
+# flake8: noqa
+
 import collections
 from datetime import date, datetime
 import itertools
