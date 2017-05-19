@@ -1,8 +1,6 @@
 language: python
 sudo: false
 
-python: 3.6
-
 branches:
   only:
     - master
@@ -11,8 +9,10 @@ cache: pip
 
 matrix:
   include:
-    - env: TOXENV=py36
-    - env: TOXENV=lint
+    - python: 3.6
+      env: TOXENV=py36
+    - python: 3.6
+      env: TOXENV=lint
 
 install:
   - "pip install -U pip setuptools"
