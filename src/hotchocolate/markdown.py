@@ -13,8 +13,6 @@ from markdown.extensions.footnotes import FootnoteExtension
 from markdown.extensions.fenced_code import FencedCodeExtension
 from markdown.extensions.smarty import SmartyExtension
 
-from .plugins import load_markdown_extensions
-
 
 def convert_markdown(source, extra_extensions=None):
     """
@@ -61,5 +59,3 @@ def convert_markdown(source, extra_extensions=None):
 
     md = markdown.Markdown(extensions=extensions)
     return md.convert(source)
-
-    # what about html entities?
