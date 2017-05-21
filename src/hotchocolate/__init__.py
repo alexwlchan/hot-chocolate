@@ -60,8 +60,6 @@ class Site:
         self.pages = []
         self.env = build_environment()
 
-        self.base_css = optimize_css(load_base_css())
-
         # Mapping from URL slugs to rendered HTML.
         # TODO: Check we don't write the same slug more than once.
         self._prepared_html = {}
@@ -69,6 +67,23 @@ class Site:
     def write(self):
         for slug, html_str in self._prepared_html.items():
             self.write_html(slug=slug, html_str=html_str)
+
+    def _optimise_html(self):
+        """Insert CSS into all the rendered HTML pages."""
+        css = optimize_css(load_base_css())
+
+        for slug, html_str in self._prepared_html.items():
+            # Insert any CSS into the page.
+            # TODO: Replace this with a proper parser for extracting the HTML.
+            body_html = html_str.split('<body>')[1].split('</body>')[0]
+            css = minimal_css_for_html(body_html=body_html, css=css)
+            html_str = html_str.replace(
+                '<!-- hc_css_include -->', f'<style>{css}</style>'
+            )
+
+            html_str = htmlmin.minify(html_str)
+
+            self._prepared_html[slug] = html_str
 
     def write_html(self, slug, html_str):
         """
@@ -79,16 +94,6 @@ class Site:
         """
         slug = slug.lstrip('/')
         os.makedirs(os.path.join(self.out_path, slug), exist_ok=True)
-
-        # Insert any CSS into the page.
-        # TODO: Replace this with a proper parser for extracting the HTML.
-        body_html = html_str.split('<body>')[1].split('</body>')[0]
-        css = minimal_css_for_html(body_html=body_html, css=self.base_css)
-        html_str = html_str.replace(
-            '<!-- hc_css_include -->', f'<style>{css}</style>'
-        )
-
-        html_str = htmlmin.minify(html_str)
 
         with open(os.path.join(self.out_path, slug, 'index.html'), 'w') as f:
             f.write(html_str)
@@ -105,6 +110,8 @@ class Site:
         self._prepare_date_index()
         self._prepare_archive()
         self._prepare_tag_index()
+
+        self._optimise_html()
 
         self._build_feeds()
         self._copy_static_files()
