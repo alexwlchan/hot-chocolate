@@ -20,6 +20,7 @@ from .css import load_base_css, minimal_css_for_html, optimize_css
 from .logging import info
 from .readers import list_page_files, list_post_files
 from .plugins import load_plugins
+from .settings import validate_settings
 from .templates import build_environment
 from .utils import Pagination, lazy_copyfile, slugify
 
@@ -35,6 +36,7 @@ class Site:
         self.path = os.path.abspath(os.curdir)
         self.out_path = '_output'
         self.settings = settings
+        validate_settings(self.settings)
 
         self.posts = []
         self.pages = []
@@ -188,7 +190,7 @@ class Site:
         load_plugins(os.path.join(os.path.abspath(path), 'plugins'))
 
         new_settings = toml.loads(open(
-            os.path.join(path, 'site.toml')
+            os.path.join(path, 'settings.toml')
         ).read())['hotchocolate']
 
         site = cls(settings=new_settings)
