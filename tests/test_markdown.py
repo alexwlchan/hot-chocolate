@@ -63,12 +63,12 @@ from hotchocolate import markdown
     ),
 ])
 def test_markdown_conversion(source, expected):
-    assert markdown.convert_markdown(source) == expected
+    assert markdown.convert_markdown(source)[0] == expected
 
 
 def test_footnote_renders_with_text_marker():
     result = markdown.convert_markdown('Hello world[^1]\n\n[^1]: A footnote')
-    assert '&#xFE0E' in result
+    assert '&#xFE0E' in result[0]
 
 
 def test_renders_with_custom_extensions(md_extension):
@@ -76,4 +76,4 @@ def test_renders_with_custom_extensions(md_extension):
         'First phrase\nSecond stanza\nLast line',
         extra_extensions=[md_extension]
     )
-    assert result == '<p>test\ntest\ntest\ntest\ntest</p>'
+    assert result[0] == '<p>test\ntest\ntest\ntest\ntest</p>'

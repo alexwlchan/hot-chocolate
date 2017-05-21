@@ -192,7 +192,7 @@ class Site:
         """Prepare the HTML for the tag-based index."""
         tags = collections.defaultdict(list)
         for p in self.posts:
-            for t in p.tags:
+            for t in p.metadata['tags']:
                 tags[t].append(p)
 
         for t, posts in tags.items():
@@ -239,8 +239,8 @@ class Site:
                 'pubdate': post.date,
                 'content': post.content,
             }
-            if post.link is not None:
-                post_kwargs['link'] = post.link
+            if post.metadata.get('link') is not None:
+                post_kwargs['link'] = post.metadata.get('link')
             if 'summary' in post.metadata:
                 post_kwargs['description'] = post.metadata['summary']
             else:
@@ -290,12 +290,12 @@ class Article:
         self.slug = metadata.get('slug')
 
         try:
-            self.tags = sorted([
+            self.metadata['tags'] = sorted([
                 t.strip()
-                for t in metadata.pop('tags').split(',')
+                for t in self.metadata.get('tags', '').split(',')
                 if t.strip()])
         except KeyError:
-            self.tags = []
+            pass
 
         self.metadata = metadata
 
@@ -316,9 +316,17 @@ class Article:
     def url(self):
         return self.slug
 
-    @property
-    def link(self):
-        return self.metadata.get('link')
+    @classmethod
+    def from_string(cls, path, file_contents):
+        """Construct an instance from a string read from a file."""
+        html, metadata = markdown.convert_markdown(file_contents, path=path)
+
+        metadata = {k: v[0] for k, v in metadata.items()}
+
+        return cls(
+            content=html,
+            metadata=metadata,
+            path=path)
 
     @classmethod
     def from_file(cls, path):
@@ -326,41 +334,18 @@ class Article:
         Construct an ``Article`` instance from a file on disk.
         """
         file_contents = open(path).read()
-
-        # Metadata is separated from the rest of the content by an empty line.
-        # TODO: Make this robust to trailing whitespace.
-        try:
-            metadata_str, content = file_contents.split('\n\n', 1)
-        except ValueError:
-            metadata_str, content = file_contents.strip(), ''
-
-        # TODO: Handle quoted strings?  Lists?
-        metadata = {}
-        for line in metadata_str.splitlines():
-            key, value = line.split(':', 1)
-            metadata[key.strip()] = value.strip()
-
-        return cls(
-            content=markdown.convert_markdown(content),
-            metadata=metadata,
-            path=path)
+        return cls.from_string(path=path, file_contents=file_contents)
 
 
 # Add some error checking that these have the correct fields
 
 class Page(Article):
-    """
-    Holds information about an individual page.
-    """
-    type = 'page'
+    """Holds information about an individual page."""
+    pass
 
 
 class Post(Article):
-    """
-    Holds information about an individual post.
-    """
-    type = 'post'
-
+    """Holds information about an individual post."""
     def __init__(self, content, metadata, path):
         super().__init__(content, metadata, path)
         self.metadata['date'] = dp.parse(self.metadata['date'])
