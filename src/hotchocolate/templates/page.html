@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<article class="page">
+
+{% if metadata.title %}
+<h1 class="page_title">
+  <a href="/{{ metadata.url }}">{{ metadata.title|title|safe }}</a>
+</h1>
+{% endif %}
+
+{{ content|safe }}
+
+</article>
+
+{% endblock %}

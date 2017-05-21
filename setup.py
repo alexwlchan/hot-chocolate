@@ -49,6 +49,7 @@ setup(
         'pyScss>=1.3.5,<2',
         'unidecode>=0.04.20,<0.05',
     ],
+    python_requires='>=3.6',
     entry_points={
         'console_scripts': [
             'cocoa=hotchocolate.cli:cli',

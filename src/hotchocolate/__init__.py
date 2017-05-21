@@ -13,11 +13,6 @@ import dateutil.parser as dp
 import htmlmin
 from feedgenerator import Atom1Feed, get_tag_uri
 
-if sys.version_info < (3, 4):  # noqa
-    raise ImportError(
-        'Hot Chocolate is not supported on Python versions before 3.4'
-    )
-
 from . import markdown
 from .css import load_base_css, minimal_css_for_html, optimize_css
 from .logging import info
@@ -25,8 +20,7 @@ from .settings import SiteSettings
 from .readers import list_page_files, list_post_files
 from .plugins import load_plugins
 from .templates import build_environment
-from .utils import lazy_copyfile, slugify
-from .writers import Pagination
+from .utils import Pagination, lazy_copyfile, slugify
 
 
 # TODO: Make this a setting
@@ -63,11 +57,18 @@ class Site:
         self.settings = SiteSettings(self.path)
 
         self.posts = []
-        self._tagged_posts = collections.defaultdict(list)
         self.pages = []
         self.env = build_environment()
 
         self.base_css = optimize_css(load_base_css())
+
+        # Mapping from URL slugs to rendered HTML.
+        # TODO: Check we don't write the same slug more than once.
+        self._prepared_html = {}
+
+    def write(self):
+        for slug, html_str in self._prepared_html.items():
+            self.write_html(slug=slug, html_str=html_str)
 
     def write_html(self, slug, html_str):
         """
@@ -96,22 +97,97 @@ class Site:
         """
         Build the complete site and write it to the output folder.
         """
-        template = self.env.get_template('article.html')
-        # TODO: Spot if we've written multiple items with the same slug
-        for post in self.posts:
-            html = template.render(site=self, article=post, title=post.title)
-            self.write_html(post.url, html)
+        self.posts = sorted(self.posts, key=lambda x: x.date, reverse=True)
 
-        for page in self.pages:
-            html = template.render(site=self, article=page, title=page.title)
-            self.write_html(page.url, html)
+        self._prepare_posts()
+        self._prepare_pages()
+        self._prepare_index(posts=self.posts)
+        self._prepare_date_index()
+        self._prepare_archive()
+        self._prepare_tag_index()
 
         self._build_feeds()
-        self._build_index()
-        self._build_tag_indices()
         self._copy_static_files()
-        self._build_date_archives()
-        self._build_archive()
+        self.write()
+
+    def _prepare_posts(self):
+        """Prepare the HTML for posts."""
+        post_template = self.env.get_template('post.html')
+        for post in self.posts:
+            html = post_template.render(
+                site=self,
+                metadata=post.metadata,
+                content=post.content
+            )
+            self._prepared_html[post.url] = html
+
+    def _prepare_pages(self):
+        """Prepare the HTML for pages."""
+        page_template = self.env.get_template('page.html')
+        for page in self.pages:
+            html = page_template.render(
+                site=self,
+                metadata=page.metadata,
+                content=page.content
+            )
+            self._prepared_html[page.url] = html
+
+    def _prepare_index(self, posts, prefix='', title=None):
+        """Prepare the HTML for a set of index pages."""
+        index_template = self.env.get_template('index.html')
+        posts = sorted(posts, key=lambda x: x.date, reverse=True)
+
+        pagination = Pagination(
+            posts=posts, page_size=PAGE_SIZE, prefix=prefix
+        )
+
+        for pageset in pagination:
+            html = index_template.render(
+                site=self,
+                posts=pageset.posts,
+                title=title,
+                pageset=pageset
+            )
+            self._prepared_html[pageset.slug] = html
+
+    def _prepare_date_index(self):
+        """Prepare the HTML for the date-based index."""
+        def get_month(p):
+            return date(p.date.year, p.date.month, 1)
+
+        for m, posts in itertools.groupby(self.posts, get_month):
+            self._prepare_index(
+                posts=posts,
+                prefix='/%04d/%02d' % (m.year, m.month),
+                title=m.strftime('Posts from %B %Y')
+            )
+
+    def _prepare_archive(self):
+        archive_template = self.env.get_template('archive.html')
+
+        def get_year(p):
+            return p.date.year
+
+        html = archive_template.render(
+            site=self,
+            post_groups=itertools.groupby(self.posts, get_year),
+            title='Archives'
+        )
+        self._prepared_html['/archives/'] = html
+
+    def _prepare_tag_index(self):
+        """Prepare the HTML for the tag-based index."""
+        tags = collections.defaultdict(list)
+        for p in self.posts:
+            for t in p.tags:
+                tags[t].append(p)
+
+        for t, posts in tags.items():
+            self._prepare_index(
+                posts=posts,
+                prefix='/tag/%s' % t,
+                title='Tagged with “%s”' % t
+            )
 
     @classmethod
     def from_folder(cls, path):
@@ -123,10 +199,7 @@ class Site:
         for path in list_post_files(site.path):
             info('Reading post from file %s',
                 path.replace(site.path, '').lstrip('/'))
-            p = Post.from_file(path)
-            for t in p.tags:
-                site._tagged_posts[t].append(p)
-            site.posts.append(p)
+            site.posts.append(Post.from_file(path))
 
         for path in list_page_files(site.path):
             info(
@@ -179,57 +252,6 @@ class Site:
             open(os.path.join(feed_dir, 'all.atom.xml'), 'w'),
             encoding='utf-8')
 
-    def _build_index(self, posts=None, prefix='', title=None):
-        # TODO: Make this more generic
-        # TODO: Make pagination size a setting
-        template = self.env.get_template('index.html')
-
-        if posts is None:
-            posts = self.posts
-        posts = sorted(posts, key=lambda x: x.date, reverse=True)
-
-        pagination = Pagination(
-            posts=posts, page_size=PAGE_SIZE, prefix=prefix
-        )
-
-        for pageset in pagination:
-            html = template.render(
-                site=self,
-                articles=pageset['articles'],
-                title=title,
-                pageset=pageset
-            )
-            self.write_html(pageset['slug'], html)
-
-    def _build_date_archives(self):
-        def get_month(p):
-            return date(p.date.year, p.date.month, 1)
-        for m, posts in itertools.groupby(self.posts, get_month):
-            self._build_index(
-                posts=posts,
-                prefix='/%04d/%02d' % (m.year, m.month),
-                title=m.strftime('Posts from %B %Y'))
-
-    def _build_archive(self):
-        template = self.env.get_template('archive.html')
-        def get_year(p):
-            return p.date.year
-        html = template.render(
-            site=self,
-            article_groups=itertools.groupby(
-                sorted(self.posts, key=lambda p: p.date, reverse=True),
-                get_year),
-            title='Archives'
-        )
-        self.write_html('/archives/', html)
-
-    def _build_tag_indices(self):
-        for t, posts in self._tagged_posts.items():
-            self._build_index(
-                posts=posts,
-                prefix='/tag/%s' % t,
-                title='Tagged with “%s”' % t)
-
     def _copy_static_files(self):
         for root, _, filenames in os.walk(os.path.join(self.path, 'static')):
             for f in filenames:
@@ -253,7 +275,7 @@ class Article:
         self.path = path
 
         # TODO: better error handling
-        self.title = markdown.convert_markdown(metadata.pop('title'))
+        self.title = markdown.convert_markdown(metadata['title'])
         # [len('<p>'):-len('</p>')]
         self.slug = metadata.get('slug')
 
@@ -314,6 +336,8 @@ class Article:
             path=path)
 
 
+# Add some error checking that these have the correct fields
+
 class Page(Article):
     """
     Holds information about an individual page.
@@ -328,10 +352,13 @@ class Post(Article):
     type = 'post'
 
     def __init__(self, content, metadata, path):
-        # TODO: Error handling
-        self.date = dp.parse(metadata.pop('date'))
         super().__init__(content, metadata, path)
+        self.metadata['date'] = dp.parse(self.metadata['date'])
 
     @property
     def url(self):
         return self.date.strftime('%Y/%m/') + self.slug
+
+    @property
+    def date(self):
+        return self.metadata['date']

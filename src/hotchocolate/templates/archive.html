@@ -1,23 +1,24 @@
 {% extends "base.html" %}
 
 {% block content %}
-<style>
-.archive_date {
-  width: 60px;
-  display: inline-block;
-}
-</style>
-  {% if title %}
-  <article>
-    <h1 class="article_title" style="margin-bottom: -5px;">{{ title }}</h1>
-    {% endif %}
-    {% for year, articles in article_groups %}
-      <h2>{{ year }}</h2>
-      <ul>
-        {% for article in articles %}
-        <li><div class="archive_date">{{ article.date.strftime('%b %-d') }}</div> <a href="/{{ article.url }}">{{ article.title|safe }}</a></li>
-        {% endfor %}
-      </ul>
+
+<article>
+
+{% if title %}
+  <h1 class="article_title" style="margin-bottom: -5px;">{{ title }}</h1>
+{% endif %}
+
+{% for year, posts in post_groups %}
+  <h2>{{ year }}</h2>
+  <ul>
+    {% for post in posts %}
+    <li>
+      <div class="archive_date">{{ post.date.strftime('%b %-d') }}</div> <a href="/{{ post.metadata.url }}">{{ post.metadata.title|title|safe }}</a>
+    </li>
     {% endfor %}
-  </article>
+  </ul>
+{% endfor %}
+
+</article>
+
 {% endblock %}
