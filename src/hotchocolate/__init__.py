@@ -18,6 +18,7 @@ from . import logging, markdown, plugins
 from .css import load_base_css, minimal_css_for_html, optimize_css
 from .logging import info
 from .readers import list_page_files, list_post_files
+from .site import NewSite
 from .settings import load_settings, validate_settings
 from .templates import build_environment
 from .utils import Pagination, lazy_copyfile, slugify
@@ -27,7 +28,7 @@ from .utils import Pagination, lazy_copyfile, slugify
 PAGE_SIZE = 10
 
 
-class Site:
+class Site(NewSite):
     """Represents a single site."""
 
     def __init__(self, settings):
@@ -52,23 +53,6 @@ class Site:
             }
             for future in concurrent.futures.as_completed(futures):
                 logging.info('Written HTML for %s', futures[future])
-
-    def _optimise_html(self):
-        """Insert CSS into all the rendered HTML pages."""
-        css = optimize_css(load_base_css())
-
-        for slug, html_str in self._prepared_html.items():
-            # Insert any CSS into the page.
-            # TODO: Replace this with a proper parser for extracting the HTML.
-            body_html = html_str.split('<body>')[1].split('</body>')[0]
-            min_css = minimal_css_for_html(body_html=body_html, css=css)
-            html_str = html_str.replace(
-                '<!-- hc_css_include -->', f'<style>{min_css}</style>'
-            )
-
-            html_str = htmlmin.minify(html_str)
-
-            self._prepared_html[slug] = html_str
 
     def write_html(self, slug, html_str):
         """
@@ -96,7 +80,10 @@ class Site:
         self._prepare_archive()
         self._prepare_tag_index()
 
-        self._optimise_html()
+        css_string = optimize_css(load_base_css())
+        self.add_css_to_html(css_string=css_string)
+
+        self.optimise_html()
 
         self._build_feeds()
         self._copy_static_files()
