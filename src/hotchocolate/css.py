@@ -102,18 +102,7 @@ class CSSProcessor:
     """
     def __init__(self, path):
         # Minify the CSS so we don't have to deal with comments or whitespace
-        self.scss_compiler = scss.Compiler(search_path=[
-            os.path.join('style'),
-            os.path.join(os.path.dirname(__file__), 'style')
-        ])
-        self.base_css = optimize(self.get_base_css(path))
-
-    def get_base_css(self, path):
-        """
-        Get the base site CSS, based on SCSS files in the package theme
-        and anything in the ``style`` directory.
-        """
-        return load_base_css()
+        self.base_css = optimize(load_base_css())
 
     def insert_css_for_page(self, html_str):
         """
