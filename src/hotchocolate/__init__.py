@@ -3,6 +3,7 @@
 # flake8: noqa
 
 import collections
+import concurrent.futures
 from datetime import date, datetime
 import itertools
 import os
@@ -13,7 +14,7 @@ import dateutil.parser as dp
 import htmlmin
 from feedgenerator import Atom1Feed, get_tag_uri
 
-from . import markdown
+from . import logging, markdown
 from .css import load_base_css, minimal_css_for_html, optimize_css
 from .logging import info
 from .settings import SiteSettings
@@ -65,8 +66,13 @@ class Site:
         self._prepared_html = {}
 
     def write(self):
-        for slug, html_str in self._prepared_html.items():
-            self.write_html(slug=slug, html_str=html_str)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+            futures = {
+                executor.submit(self.write_html, slug, html_str): slug
+                for slug, html_str in self._prepared_html.items()
+            }
+            for future in concurrent.futures.as_completed(futures):
+                logging.info('Written HTML for %s', futures[future])
 
     def _optimise_html(self):
         """Insert CSS into all the rendered HTML pages."""
@@ -228,7 +234,7 @@ class Site:
 
         for post in reversed(self.posts):
             post_kwargs = {
-                'title': post.title,
+                'title': post.metadata['title'],
                 'link': self.url + post.url,
                 'pubdate': post.date,
                 'content': post.content,
@@ -281,9 +287,6 @@ class Article:
         self.metadata = metadata
         self.path = path
 
-        # TODO: better error handling
-        self.title = markdown.convert_markdown(metadata['title'])
-        # [len('<p>'):-len('</p>')]
         self.slug = metadata.get('slug')
 
         try:
@@ -302,7 +305,7 @@ class Article:
     @property
     def slug(self):
         if self._slug is None:
-            self._slug = slugify(self.title)
+            self._slug = slugify(self.metadata['title'])
         return self._slug
 
     @slug.setter
