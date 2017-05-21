@@ -69,15 +69,18 @@ class _InMemoryProcessor(mp.Processor):
     def download(self, url):
         return url
 
-    def render_html(self, body_html, css):
+    def find_covering_css(self, body_html, css):
         self.process(f'<style>{css}</style><body>{body_html}</body>')
-        return self.inlines[0].after
+        try:
+            return self.inlines[0].after
+        except IndexError:
+            return ''
 
 
 def minimal_css_for_html(body_html, css):
     """Returns the minimal CSS required to render a block of body HTML."""
     proc = _InMemoryProcessor()
-    return proc.render_html(body_html=body_html, css=css)
+    return proc.find_covering_css(body_html=body_html, css=css)
 
 
 def load_base_css(style_dir=None):
