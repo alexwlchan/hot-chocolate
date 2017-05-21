@@ -31,21 +31,28 @@ class TestAddingCSStoHTML:
     ])
     def test_with_css_that_makes_no_change(self, css_string):
         result = self._add_css_to_html(
-            html='<html><!-- hc_css_include --><body><p>hello world</p></body></html>',
+            html='<html><body><p>hello world</p></body></html>',
             css_string=css_string
         )
         assert result == '<html><body><p>hello world</p></body></html>'
 
+    def test_inserting_css_without_a_head_tag(self):
+        result = self._add_css_to_html(
+            html='<html><body><p>hello world</p></body></html>',
+            css_string='p { color: red; }'
+        )
+        assert result == '<html><head><style>p { color: red; }</style></head><body><p>hello world</p></body></html>'
+
     def test_inserting_relevant_css(self):
         result = self._add_css_to_html(
-            html='<html><head><!-- hc_css_include --></head><body><p>hello world</p></body></html>',
+            html='<html><head></head><body><p>hello world</p></body></html>',
             css_string='p { color: red; }'
         )
         assert result == '<html><head><style>p { color: red; }</style></head><body><p>hello world</p></body></html>'
 
     def test_inserting_mixed_css(self):
         result = self._add_css_to_html(
-            html='<html><head><!-- hc_css_include --></head><body><p>hello world</p></body></html>',
+            html='<html><head></head><body><p>hello world</p></body></html>',
             css_string='em { color: green; } p { color: red; } strong { color: yellow; }'
         )
         assert result == '<html><head><style> p { color: red; }</style></head><body><p>hello world</p></body></html>'
@@ -54,7 +61,7 @@ class TestAddingCSStoHTML:
         # This is a check that I'm using a proper HTML parser to find the
         # body HTML, not just a regex or something.
         result = self._add_css_to_html(
-            html='<html><head><!-- hc_css_include --></head><body id="foo"><p>hello world</p></body></html>',
+            html='<html><head></head><body id="foo"><p>hello world</p></body></html>',
             css_string='em { color: green; } p { color: red; } strong { color: yellow; }'
         )
         assert result == '<html><head><style> p { color: red; }</style></head><body id="foo"><p>hello world</p></body></html>'

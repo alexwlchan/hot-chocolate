@@ -50,16 +50,18 @@ class NewSite:
             soup = bs4.BeautifulSoup(html_str)
             body_html = ''.join([str(s) for s in soup.find('body').contents])
 
-            min_css = css.minimal_css_for_html(body_html=body_html, css=css_string)
-
-            # TODO: Remove all other <style> tags.
-
-            html_str = html_str.replace(
-                '<!-- hc_css_include -->', f'<style>{min_css}</style>'
+            min_css = css.minimal_css_for_html(
+                body_html=body_html, css=css_string
             )
 
-            # If there's no CSS, we can just drop the <style> tag.
-            html_str = html_str.replace('<style></style>', '')
+            # Add the CSS within the <head> section.  If there isn't one,
+            # add it.
+            if min_css.strip():
+                if '</head>' not in html_str:
+                    html_str = html_str.replace('<body', '<head></head><body', 1)
+                html_str = html_str.replace(
+                    '</head>', f'<style>{min_css}</style></head>'
+                )
 
             self._prepared_html[slug] = html_str
 
