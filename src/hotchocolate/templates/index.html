@@ -1,17 +1,21 @@
 {% extends "base.html" %}
 
 {% block content %}
-  {% if title %}
-  <article>
-  <h2 style="margin-bottom: 0px;">{{ title }}</h2>
-  </article>
-  <hr/>
-  {% endif %}
-  {% with is_index = True %}
-    {% for article in articles %}
-      {% include "article_content.html" %}
-      {% if loop.index != articles|count %}<hr/>{% endif %}
-    {% endfor %}
-  {% endwith %}
-  {% include "pagination.html" %}
+
+{% if title %}
+<article>
+  <h2 class="index_title">{{ title }}</h2>
+</article>
+<hr/>
+{% endif %}
+
+{% with is_index = True %}
+  {% for article in articles %}
+    {% include "article_content.html" %}
+    {% if loop.index != articles|count %}<hr/>{% endif %}
+  {% endfor %}
+{% endwith %}
+
+{% include "pagination.html" %}
+
 {% endblock %}

@@ -64,6 +64,14 @@ class Site:
 
         self.base_css = optimize_css(load_base_css())
 
+        # Mapping from URL slugs to rendered HTML.
+        # TODO: Check we don't write the same slug more than once.
+        self._rendered_html = {}
+
+    def write(self):
+        for slug, html_str in self._rendered_html.items():
+            self.write_html(slug=slug, html_str=html_str)
+
     def write_html(self, slug, html_str):
         """
         Writes a string to a path in the output directory.
@@ -91,12 +99,9 @@ class Site:
         """
         Build the complete site and write it to the output folder.
         """
-        template = self.env.get_template('article.html')
-        # TODO: Spot if we've written multiple items with the same slug
-        for post in self.posts:
-            html = template.render(site=self, article=post, title=post.title)
-            self.write_html(post.url, html)
+        self._prepare_posts()
 
+        template = self.env.get_template('article.html')
         for page in self.pages:
             html = template.render(site=self, article=page, title=page.title)
             self.write_html(page.url, html)
@@ -107,6 +112,20 @@ class Site:
         self._copy_static_files()
         self._build_date_archives()
         self._build_archive()
+        self.write()
+
+    def _prepare_posts(self):
+        """
+        Prepare the HTML for the posts.
+        """
+        post_template = self.env.get_template('post.html')
+        for post in self.posts:
+            html = post_template.render(
+                site=self,
+                metadata=post.metadata,
+                content=post.content
+            )
+            self._rendered_html[post.url] = html
 
     @classmethod
     def from_folder(cls, path):
@@ -248,7 +267,7 @@ class Article:
         self.path = path
 
         # TODO: better error handling
-        self.title = markdown.convert_markdown(metadata.pop('title'))
+        self.title = markdown.convert_markdown(metadata['title'])
         # [len('<p>'):-len('</p>')]
         self.slug = metadata.get('slug')
 
@@ -309,6 +328,8 @@ class Article:
             path=path)
 
 
+# Add some error checking that these have the correct fields
+
 class Page(Article):
     """
     Holds information about an individual page.
@@ -323,10 +344,13 @@ class Post(Article):
     type = 'post'
 
     def __init__(self, content, metadata, path):
-        # TODO: Error handling
-        self.date = dp.parse(metadata.pop('date'))
         super().__init__(content, metadata, path)
+        self.metadata['date'] = dp.parse(self.metadata['date'])
 
     @property
     def url(self):
         return self.date.strftime('%Y/%m/') + self.slug
+
+    @property
+    def date(self):
+        return self.metadata['date']
