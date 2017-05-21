@@ -98,15 +98,17 @@ class Site:
         """
         Build the complete site and write it to the output folder.
         """
+        self.posts = sorted(self.posts, key=lambda x: x.date, reverse=True)
+
         self._prepare_posts()
         self._prepare_pages()
         self._prepare_index(posts=self.posts)
         self._prepare_date_index()
+        self._prepare_archive()
 
         self._build_feeds()
         self._build_tag_indices()
         self._copy_static_files()
-        self._build_archive()
         self.write()
 
     def _prepare_posts(self):
@@ -154,13 +156,25 @@ class Site:
         def get_month(p):
             return date(p.date.year, p.date.month, 1)
 
-        posts = sorted(self.posts, key=lambda x: x.date, reverse=True)
         for m, posts in itertools.groupby(self.posts, get_month):
             self._prepare_index(
                 posts=posts,
                 prefix='/%04d/%02d' % (m.year, m.month),
                 title=m.strftime('Posts from %B %Y')
             )
+
+    def _prepare_archive(self):
+        archive_template = self.env.get_template('archive.html')
+
+        def get_year(p):
+            return p.date.year
+
+        html = archive_template.render(
+            site=self,
+            post_groups=itertools.groupby(self.posts, get_year),
+            title='Archives'
+        )
+        self._prepared_html['/archives/'] = html
 
     @classmethod
     def from_folder(cls, path):
@@ -230,19 +244,6 @@ class Site:
 
     def _build_index(self, posts=None, prefix='', title=None):
         self._prepare_index(posts=posts, prefix=prefix, title=title)
-
-    def _build_archive(self):
-        template = self.env.get_template('archive.html')
-        def get_year(p):
-            return p.date.year
-        html = template.render(
-            site=self,
-            article_groups=itertools.groupby(
-                sorted(self.posts, key=lambda p: p.date, reverse=True),
-                get_year),
-            title='Archives'
-        )
-        self.write_html('/archives/', html)
 
     def _build_tag_indices(self):
         for t, posts in self._tagged_posts.items():
