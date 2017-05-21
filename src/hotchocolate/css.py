@@ -58,24 +58,29 @@ def cleancss(css):
         os.unlink(path)
 
 
-class CSSMinimiser(mp.Processor):
+class _InMemoryProcessor(mp.Processor):
     """
-    A wrapper around ``mincss.Processor`` that's designed to do in-memory
-    stripping of unused/duplicate CSS rules, minify the result and return
-    the final HTML string.
+    A wrapper for doing in-memory stripping of unused CSS rules.
     """
+    # The internals of this class are a bit messy and don't present themselves
+    # well to doing in-memory operations: they expect to go out to the
+    # filesystem and read files.  We have to change a few internal pieces
+    # as we already have the file to hand.
+
     def download(self, url):
         return url
 
-    def render_html(self, html_str, css_str):
-        self.process('<style>%s</style><body>%s</body>' % (
-            css_str, html_str.split('<body>')[1].split('</body>')[0]))
-        css_str = self.inlines[0].after
+    def render_html(self, body_html, css):
+        self.process(f'<style>{css}</style><body>{body_html}</body>')
+        return self.inlines[0].after
 
-        # Finally, substitute the final CSS string and return the HTML
-        return html_str.replace(
-            '<!-- hc_css_include -->', '<style>%s</style>' % css_str
-        )
+
+def minimal_css_for_html(body_html, css):
+    """
+    Returns the minimal CSS required to render a block of body HTML.
+    """
+    proc = _InMemoryProcessor()
+    return proc.render_html(body_html=body_html, css=css)
 
 
 class CSSProcessor:
@@ -134,4 +139,9 @@ class CSSProcessor:
         Given the HTML contents of a page, fill in the minimal set of CSS
         required to render the page.
         """
-        return CSSMinimiser().render_html(html_str, self.base_css)
+        css = minimal_css_for_html(
+            html_str=html_str.split('<body>')[1].split('</body>')[0],
+            css=self.base_css
+        )
+        return html_str.replace(
+            '<!-- hc_css_include -->', f'<style>{css}</style>')
