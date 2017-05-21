@@ -101,11 +101,11 @@ class Site:
         self._prepare_posts()
         self._prepare_pages()
         self._prepare_index(posts=self.posts)
+        self._prepare_date_index()
 
         self._build_feeds()
         self._build_tag_indices()
         self._copy_static_files()
-        self._build_date_archives()
         self._build_archive()
         self.write()
 
@@ -130,6 +130,37 @@ class Site:
                 content=page.content
             )
             self._prepared_html[page.url] = html
+
+    def _prepare_index(self, posts, prefix='', title=None):
+        """Prepare the HTML for a set of index pages."""
+        index_template = self.env.get_template('index.html')
+        posts = sorted(posts, key=lambda x: x.date, reverse=True)
+
+        pagination = Pagination(
+            posts=posts, page_size=PAGE_SIZE, prefix=prefix
+        )
+
+        for pageset in pagination:
+            html = index_template.render(
+                site=self,
+                posts=pageset.posts,
+                title=title,
+                pageset=pageset
+            )
+            self._prepared_html[pageset.slug] = html
+
+    def _prepare_date_index(self):
+        """Prepare the HTML for the date-based index."""
+        def get_month(p):
+            return date(p.date.year, p.date.month, 1)
+
+        posts = sorted(self.posts, key=lambda x: x.date, reverse=True)
+        for m, posts in itertools.groupby(self.posts, get_month):
+            self._prepare_index(
+                posts=posts,
+                prefix='/%04d/%02d' % (m.year, m.month),
+                title=m.strftime('Posts from %B %Y')
+            )
 
     @classmethod
     def from_folder(cls, path):
@@ -197,35 +228,8 @@ class Site:
             open(os.path.join(feed_dir, 'all.atom.xml'), 'w'),
             encoding='utf-8')
 
-    def _prepare_index(self, posts, prefix='', title=None):
-        """Prepare the HTML for a set of index pages."""
-        index_template = self.env.get_template('index.html')
-        posts = sorted(posts, key=lambda x: x.date, reverse=True)
-
-        pagination = Pagination(
-            posts=posts, page_size=PAGE_SIZE, prefix=prefix
-        )
-
-        for pageset in pagination:
-            html = index_template.render(
-                site=self,
-                posts=pageset.posts,
-                title=title,
-                pageset=pageset
-            )
-            self._prepared_html[pageset.slug] = html
-
     def _build_index(self, posts=None, prefix='', title=None):
         self._prepare_index(posts=posts, prefix=prefix, title=title)
-
-    def _build_date_archives(self):
-        def get_month(p):
-            return date(p.date.year, p.date.month, 1)
-        for m, posts in itertools.groupby(self.posts, get_month):
-            self._build_index(
-                posts=posts,
-                prefix='/%04d/%02d' % (m.year, m.month),
-                title=m.strftime('Posts from %B %Y'))
 
     def _build_archive(self):
         template = self.env.get_template('archive.html')
