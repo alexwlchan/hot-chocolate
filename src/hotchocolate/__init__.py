@@ -100,11 +100,7 @@ class Site:
         Build the complete site and write it to the output folder.
         """
         self._prepare_posts()
-
-        template = self.env.get_template('article.html')
-        for page in self.pages:
-            html = template.render(site=self, article=page, title=page.title)
-            self.write_html(page.url, html)
+        self._prepare_pages()
 
         self._build_feeds()
         self._build_index()
@@ -116,7 +112,7 @@ class Site:
 
     def _prepare_posts(self):
         """
-        Prepare the HTML for the posts.
+        Prepare the HTML for posts.
         """
         post_template = self.env.get_template('post.html')
         for post in self.posts:
@@ -126,6 +122,19 @@ class Site:
                 content=post.content
             )
             self._rendered_html[post.url] = html
+
+    def _prepare_pages(self):
+        """
+        Prepare the HTML for pages.
+        """
+        page_template = self.env.get_template('page.html')
+        for page in self.pages:
+            html = page_template.render(
+                site=self,
+                metadata=page.metadata,
+                content=page.content
+            )
+            self._rendered_html[page.url] = html
 
     @classmethod
     def from_folder(cls, path):
