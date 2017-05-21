@@ -10,7 +10,7 @@ import pytest
 from hotchocolate import css
 
 
-@pytest.mark.parametrize('method', [css.cleancss, css.optimize])
+@pytest.mark.parametrize('method', [css.cleancss, css.optimize_css])
 @pytest.mark.parametrize('css_string', [
     'p { color: red; }',
 ])
@@ -44,7 +44,15 @@ def test_minimal_css_for_html(body_html, input_css, expected_css):
     assert result == expected_css
 
 
-def test_load_base_css(test_root):
+def test_load_base_css_with_custom_style_dir(test_root):
     style_dir = os.path.join(test_root, 'style')
     result = css.load_base_css(style_dir=style_dir)
+    assert result == 'p {\n  color: red; }\n'
+
+
+def test_load_base_css_with_default_dir(test_root):
+    curdir = os.curdir
+    os.chdir(test_root)
+    result = css.load_base_css()
+    os.chdir(curdir)
     assert result == 'p {\n  color: red; }\n'

@@ -25,7 +25,7 @@ import scss.compiler
 STYLE_DIR = 'style'
 
 
-def optimize(css):
+def optimize_css(css):
     """
     Given a CSS string, optimize and minify it as much as possible.
     """
@@ -94,24 +94,3 @@ def load_base_css(style_dir=None):
         style_dir = STYLE_DIR
 
     return scss.compiler.compile_file(os.path.join(style_dir, 'style.scss'))
-
-
-class CSSProcessor:
-    """
-    Entry point for the CSS generator.
-    """
-    def __init__(self, path):
-        # Minify the CSS so we don't have to deal with comments or whitespace
-        self.base_css = optimize(load_base_css())
-
-    def insert_css_for_page(self, html_str):
-        """
-        Given the HTML contents of a page, fill in the minimal set of CSS
-        required to render the page.
-        """
-        css = minimal_css_for_html(
-            html_str=html_str.split('<body>')[1].split('</body>')[0],
-            css=self.base_css
-        )
-        return html_str.replace(
-            '<!-- hc_css_include -->', f'<style>{css}</style>')
