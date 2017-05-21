@@ -13,11 +13,6 @@ import dateutil.parser as dp
 import htmlmin
 from feedgenerator import Atom1Feed, get_tag_uri
 
-if sys.version_info < (3, 4):  # noqa
-    raise ImportError(
-        'Hot Chocolate is not supported on Python versions before 3.4'
-    )
-
 from . import markdown
 from .css import load_base_css, minimal_css_for_html, optimize_css
 from .logging import info
