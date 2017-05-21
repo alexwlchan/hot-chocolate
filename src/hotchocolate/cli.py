@@ -12,6 +12,7 @@ import requests
 
 from . import Site
 from .logging import success
+from .settings import create_new_settings
 from .utils import slugify
 
 
@@ -124,9 +125,7 @@ def init():
     """
     The ``init`` command creates a new site.
     """
-    config_str = create_new_settings()
-    with open('config.ini', 'w') as cfgfile:
-        cfgfile.write(config_str)
+    create_new_settings()
 
     for dirname in ('pages', 'posts', 'static', 'style', 'templates'):
         os.makedirs(dirname, exist_ok=True)
