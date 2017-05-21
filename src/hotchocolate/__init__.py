@@ -1,6 +1,9 @@
 # -*- encoding: utf-8
 
+# flake8: noqa
+
 import collections
+import concurrent.futures
 from datetime import date, datetime
 import itertools
 import os
@@ -11,59 +14,61 @@ import dateutil.parser as dp
 import htmlmin
 from feedgenerator import Atom1Feed, get_tag_uri
 
-if sys.version_info < (3, 4):  # noqa
-    raise ImportError(
-        'Hot Chocolate is not supported on Python versions before 3.4'
-    )
-
-from .css import CSSProcessor
+from . import logging, markdown, plugins
+from .css import load_base_css, minimal_css_for_html, optimize_css
 from .logging import info
-from .markdown import Markdown
-from .settings import SiteSettings
 from .readers import list_page_files, list_post_files
-from .plugins import load_plugins
-from .utils import lazy_copyfile, slugify
-from .writers import CocoaEnvironment, Pagination
+from .settings import load_settings, validate_settings
+from .templates import build_environment
+from .utils import Pagination, lazy_copyfile, slugify
 
 
 # TODO: Make this a setting
 PAGE_SIZE = 10
 
 
-class _SiteSettingDescriptor:
-    def __init__(self, section, option):
-        self.section = section
-        self.option = option
-
-    def __get__(self, instance, type):
-        return instance.settings.get(self.section, self.option)
-
-
 class Site:
-    """
-    Holds the settings for an individual site.
-    """
+    """Represents a single site."""
 
-    name            = _SiteSettingDescriptor('site', 'name')
-    url             = _SiteSettingDescriptor('site', 'url')
-    header_links    = _SiteSettingDescriptor('site', 'header_links')
-    language        = _SiteSettingDescriptor('site', 'language')
-    subtitle        = _SiteSettingDescriptor('site', 'subtitle')
-    search_enabled  = _SiteSettingDescriptor('site', 'search_enabled')
-    author          = _SiteSettingDescriptor('site', 'author')
-    author_email    = _SiteSettingDescriptor('site', 'author_email')
-    description     = _SiteSettingDescriptor('site', 'description')
-
-    def __init__(self):
+    def __init__(self, settings):
         self.path = os.path.abspath(os.curdir)
-        self.out_path = '_output'
-        self.settings = SiteSettings(self.path)
+        self.settings = settings
+        validate_settings(self.settings)
 
         self.posts = []
-        self._tagged_posts = collections.defaultdict(list)
         self.pages = []
-        self.env = CocoaEnvironment(self.path)
-        self.css_proc = CSSProcessor(self.path)
+        self.env = build_environment()
+
+        # Mapping from URL slugs to rendered HTML.
+        # TODO: Check we don't write the same slug more than once.
+        self._prepared_html = {}
+
+    def write(self):
+        """Write all the prepared HTML to files on disk."""
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+            futures = {
+                executor.submit(self.write_html, slug, html_str): slug
+                for slug, html_str in self._prepared_html.items()
+            }
+            for future in concurrent.futures.as_completed(futures):
+                logging.info('Written HTML for %s', futures[future])
+
+    def _optimise_html(self):
+        """Insert CSS into all the rendered HTML pages."""
+        css = optimize_css(load_base_css())
+
+        for slug, html_str in self._prepared_html.items():
+            # Insert any CSS into the page.
+            # TODO: Replace this with a proper parser for extracting the HTML.
+            body_html = html_str.split('<body>')[1].split('</body>')[0]
+            min_css = minimal_css_for_html(body_html=body_html, css=css)
+            html_str = html_str.replace(
+                '<!-- hc_css_include -->', f'<style>{min_css}</style>'
+            )
+
+            html_str = htmlmin.minify(html_str)
+
+            self._prepared_html[slug] = html_str
 
     def write_html(self, slug, html_str):
         """
@@ -73,49 +78,117 @@ class Site:
         pretty URLs without needing web server configuration.
         """
         slug = slug.lstrip('/')
-        os.makedirs(os.path.join(self.out_path, slug), exist_ok=True)
+        os.makedirs(os.path.join(site.OUTPUT_DIR, slug), exist_ok=True)
 
-        html_str = self.css_proc.insert_css_for_page(html_str)
-        html_str = htmlmin.minify(html_str)
-
-        with open(os.path.join(self.out_path, slug, 'index.html'), 'w') as f:
+        with open(os.path.join(site.OUTPUT_DIR, slug, 'index.html'), 'w') as f:
             f.write(html_str)
 
     def build(self):
         """
         Build the complete site and write it to the output folder.
         """
-        template = self.env.get_template('article.html')
-        # TODO: Spot if we've written multiple items with the same slug
-        for post in self.posts:
-            html = template.render(site=self, article=post, title=post.title)
-            self.write_html(post.url, html)
+        self.posts = sorted(self.posts, key=lambda x: x.metadata['date'], reverse=True)
 
-        for page in self.pages:
-            html = template.render(site=self, article=page, title=page.title)
-            self.write_html(page.url, html)
+        self._prepare_posts()
+        self._prepare_pages()
+        self._prepare_index(posts=self.posts)
+        self._prepare_date_index()
+        self._prepare_archive()
+        self._prepare_tag_index()
+
+        self._optimise_html()
 
         self._build_feeds()
-        self._build_index()
-        self._build_tag_indices()
         self._copy_static_files()
-        self._build_date_archives()
-        self._build_archive()
+        self.write()
+
+    def _prepare_posts(self):
+        """Prepare the HTML for posts."""
+        post_template = self.env.get_template('post.html')
+        for post in self.posts:
+            html = post_template.render(
+                site=self,
+                metadata=post.metadata,
+                content=post.content
+            )
+            self._prepared_html[post.metadata['url']] = html
+
+    def _prepare_pages(self):
+        """Prepare the HTML for pages."""
+        page_template = self.env.get_template('page.html')
+        for page in self.pages:
+            html = page_template.render(
+                site=self,
+                metadata=page.metadata,
+                content=page.content
+            )
+            self._prepared_html[page.metadata['url']] = html
+
+    def _prepare_index(self, posts, prefix='', title=None):
+        """Prepare the HTML for a set of index pages."""
+        index_template = self.env.get_template('index.html')
+        posts = sorted(posts, key=lambda x: x.metadata['date'], reverse=True)
+
+        pagination = Pagination(
+            posts=posts, page_size=PAGE_SIZE, prefix=prefix
+        )
+
+        for pageset in pagination:
+            html = index_template.render(
+                site=self,
+                posts=pageset.posts,
+                title=title,
+                pageset=pageset
+            )
+            self._prepared_html[pageset.slug] = html
+
+    def _prepare_date_index(self):
+        """Prepare the HTML for the date-based index."""
+        def get_month(p):
+            return date(p.metadata['date'].year, p.metadata['date'].month, 1)
+
+        for m, posts in itertools.groupby(self.posts, get_month):
+            self._prepare_index(
+                posts=posts,
+                prefix='/%04d/%02d' % (m.year, m.month),
+                title=m.strftime('Posts from %B %Y')
+            )
+
+    def _prepare_archive(self):
+        archive_template = self.env.get_template('archive.html')
+
+        def get_year(p):
+            return p.metadata['date'].year
+
+        html = archive_template.render(
+            site=self,
+            post_groups=itertools.groupby(self.posts, get_year),
+            title='Archives'
+        )
+        self._prepared_html['/archives/'] = html
+
+    def _prepare_tag_index(self):
+        """Prepare the HTML for the tag-based index."""
+        tags = collections.defaultdict(list)
+        for p in self.posts:
+            for t in p.metadata['tags']:
+                tags[t].append(p)
+
+        for t, posts in tags.items():
+            self._prepare_index(
+                posts=posts,
+                prefix='/tag/%s' % t,
+                title='Tagged with “%s”' % t
+            )
 
     @classmethod
     def from_folder(cls, path):
-        """
-        Construct a ``Site`` instance from a folder on disk.
-        """
-        load_plugins(os.path.join(os.path.abspath(path), 'plugins'))
-        site = cls()
+        """Construct a ``Site`` instance from a folder on disk."""
+        site = cls(settings=load_settings(path))
         for path in list_post_files(site.path):
             info('Reading post from file %s',
                 path.replace(site.path, '').lstrip('/'))
-            p = Post.from_file(path)
-            for t in p.tags:
-                site._tagged_posts[t].append(p)
-            site.posts.append(p)
+            site.posts.append(Post.from_file(path))
 
         for path in list_page_files(site.path):
             info(
@@ -127,28 +200,28 @@ class Site:
 
     def _build_feeds(self):
         feed_kwargs = {
-            'title': self.name,
-            'link': self.url + '/feeds/all.atom.xml',
-            'description': self.description,
-            'author_name': self.author,
-            'author_email': self.author_email,
+            'title': self.settings['name'],
+            'link': self.settings['url'] + '/feeds/all.atom.xml',
+            'description': self.settings['description'],
+            'author_name': self.settings['author'],
+            'author_email': self.settings['author_email'],
         }
         feed = Atom1Feed(**feed_kwargs)
 
         for post in reversed(self.posts):
             post_kwargs = {
-                'title': post.title,
-                'link': self.url + post.url,
-                'pubdate': post.date,
+                'title': post.metadata['title'],
+                'link': self.settings['url'] + post.metadata['url'],
+                'pubdate': post.metadata['date'],
                 'content': post.content,
             }
-            if post.link is not None:
-                post_kwargs['link'] = post.link
+            if post.metadata.get('link') is not None:
+                post_kwargs['link'] = post.metadata.get('link')
             if 'summary' in post.metadata:
                 post_kwargs['description'] = post.metadata['summary']
             else:
                 post_kwargs['description'] = post_kwargs['content']
-            post_kwargs['unique_id'] = get_tag_uri(post_kwargs['link'], post.date)
+            post_kwargs['unique_id'] = get_tag_uri(post_kwargs['link'], post.metadata['date'])
 
             if '<blockquote class="update">' in post.content:
                 update_strings = re.findall(
@@ -162,62 +235,11 @@ class Site:
 
             feed.add_item(**post_kwargs)
 
-        feed_dir = os.path.join(self.out_path, 'feeds')
+        feed_dir = os.path.join(site.OUTPUT_DIR, 'feeds')
         os.makedirs(feed_dir, exist_ok=True)
         feed.write(
             open(os.path.join(feed_dir, 'all.atom.xml'), 'w'),
             encoding='utf-8')
-
-    def _build_index(self, posts=None, prefix='', title=None):
-        # TODO: Make this more generic
-        # TODO: Make pagination size a setting
-        template = self.env.get_template('index.html')
-
-        if posts is None:
-            posts = self.posts
-        posts = sorted(posts, key=lambda x: x.date, reverse=True)
-
-        pagination = Pagination(
-            posts=posts, page_size=PAGE_SIZE, prefix=prefix
-        )
-
-        for pageset in pagination:
-            html = template.render(
-                site=self,
-                articles=pageset['articles'],
-                title=title,
-                pageset=pageset
-            )
-            self.write_html(pageset['slug'], html)
-
-    def _build_date_archives(self):
-        def get_month(p):
-            return date(p.date.year, p.date.month, 1)
-        for m, posts in itertools.groupby(self.posts, get_month):
-            self._build_index(
-                posts=posts,
-                prefix='/%04d/%02d' % (m.year, m.month),
-                title=m.strftime('Posts from %B %Y'))
-
-    def _build_archive(self):
-        template = self.env.get_template('archive.html')
-        def get_year(p):
-            return p.date.year
-        html = template.render(
-            site=self,
-            article_groups=itertools.groupby(
-                sorted(self.posts, key=lambda p: p.date, reverse=True),
-                get_year),
-            title='Archives'
-        )
-        self.write_html('/archives/', html)
-
-    def _build_tag_indices(self):
-        for t, posts in self._tagged_posts.items():
-            self._build_index(
-                posts=posts,
-                prefix='/tag/%s' % t,
-                title='Tagged with “%s”' % t)
 
     def _copy_static_files(self):
         for root, _, filenames in os.walk(os.path.join(self.path, 'static')):
@@ -228,7 +250,7 @@ class Site:
                     self.path + '/static/', '')
                 lazy_copyfile(
                     src=os.path.join(self.path, 'static', base),
-                    dst=os.path.join(self.out_path, base),
+                    dst=os.path.join(site.OUTPUT_DIR, base),
                 )
 
 
@@ -236,92 +258,61 @@ class Article:
     """
     Holds information about an individual article (a page or a post).
     """
-    markdown = Markdown()
-
     def __init__(self, content, metadata, path):
         self.content = content
         self.metadata = metadata
         self.path = path
 
-        # TODO: better error handling
-        self.title = metadata.pop('title')
-        self.slug = metadata.get('slug')
+        if 'slug' not in self.metadata:
+            self.metadata['slug'] = slugify(self.metadata['title'])
+
+        self.metadata['url'] = self.metadata['slug']
 
         try:
-            self.tags = sorted([
+            self.metadata['tags'] = sorted([
                 t.strip()
-                for t in metadata.pop('tags').split(',')
+                for t in self.metadata.get('tags', '').split(',')
                 if t.strip()])
         except KeyError:
-            self.tags = []
+            pass
 
         self.metadata = metadata
 
     def __repr__(self):
         return '<%s path=%r>' % (type(self).__name__, self.path)
 
-    @property
-    def slug(self):
-        if self._slug is None:
-            self._slug = slugify(self.title)
-        return self._slug
-
-    @slug.setter
-    def slug(self, value):
-        self._slug = value
-
-    @property
-    def url(self):
-        return self.slug
-
-    @property
-    def link(self):
-        return self.metadata.get('link')
-
     @classmethod
-    def from_file(cls, path):
-        """
-        Construct an ``Article`` instance from a file on disk.
-        """
-        file_contents = open(path).read()
+    def from_string(cls, path, file_contents):
+        """Construct an instance from a string read from a file."""
+        html, metadata = markdown.convert_markdown(
+            file_contents,
+            extra_extensions=plugins.load_markdown_extensions()
+        )
 
-        # Metadata is separated from the rest of the content by an empty line.
-        # TODO: Make this robust to trailing whitespace.
-        try:
-            metadata_str, content = file_contents.split('\n\n', 1)
-        except ValueError:
-            metadata_str, content = file_contents.strip(), ''
-
-        # TODO: Handle quoted strings?  Lists?
-        metadata = {}
-        for line in metadata_str.splitlines():
-            key, value = line.split(':', 1)
-            metadata[key.strip()] = value.strip()
+        metadata = {k: v[0] for k, v in metadata.items()}
 
         return cls(
-            content=cls.markdown.convert(content),
+            content=html,
             metadata=metadata,
             path=path)
 
+    @classmethod
+    def from_file(cls, path):
+        """Construct an ``Article`` instance from a file on disk."""
+        file_contents = open(path).read()
+        return cls.from_string(path=path, file_contents=file_contents)
+
+
+# Add some error checking that these have the correct fields
 
 class Page(Article):
-    """
-    Holds information about an individual page.
-    """
-    type = 'page'
+    """Holds information about an individual page."""
+    pass
 
 
 class Post(Article):
-    """
-    Holds information about an individual post.
-    """
-    type = 'post'
-
+    """Holds information about an individual post."""
     def __init__(self, content, metadata, path):
-        # TODO: Error handling
-        self.date = dp.parse(metadata.pop('date'))
         super().__init__(content, metadata, path)
-
-    @property
-    def url(self):
-        return self.date.strftime('%Y/%m/') + self.slug
+        self.metadata['date'] = dp.parse(self.metadata['date'])
+        self.metadata['url'] = self.metadata['date'].strftime('%Y/%m/') + self.metadata['slug']

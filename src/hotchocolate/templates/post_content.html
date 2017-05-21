@@ -1,0 +1,32 @@
+<article class="post">
+
+  <h1 class="post_title{% if 'link' in metadata %} linkpost_title{% endif %}">
+    <a href="{% if 'link' in metadata %}{{ metadata.link }}{% else %}/{{ metadata.url }}{% endif %}">{{ metadata.title|title|safe }}</a>
+  </h1>
+
+  <div class="post_meta">
+    <ul class="dot_list">
+      <li class="post_date">Posted on {{ metadata.date|locale_date }}</li>
+
+      {% if metadata.tags|length > 0 %}
+      <li class="post_tags">Tagged with
+
+        {#
+          Fill in a comma-separated list of tags, ensuring that the last
+          tag isn't followed by a comma.
+        #}
+        {% for tag in metadata.tags|sort %}
+          <a href="/tag/{{ tag }}/" class="tag_{{ tag }}">{{ tag }}</a>{% if loop.index != metadata.tags|count %}, {% endif %}
+        {% endfor %}</li>
+      {% endif %}
+
+      {% if 'link' in metadata %}
+      <li class="post_permalink"><a href="/{{ metadata.url }}">&infin;</a></li>
+      {% endif %}
+
+    </ul>
+  </div>
+
+  {{ content|safe }}
+
+</article>

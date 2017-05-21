@@ -18,7 +18,7 @@ long_description = codecs.open(README, encoding='utf-8').read()
 
 setup(
     name='hotchocolate',
-    version='2.0.4',
+    version='3.0.0',
     description='A static site generator designed for lightweight sites',
     long_description=long_description,
     url='https://github.com/alexwlchan/hot-chocolate',
@@ -29,8 +29,6 @@ setup(
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Other Audience',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3 :: Only',
     ],
@@ -49,8 +47,10 @@ setup(
         'mincss>=0.11.2,<0.12',
         'Pygments>=2.2.0,<3',
         'pyScss>=1.3.5,<2',
+        'toml>=0.9.2,<1',
         'unidecode>=0.04.20,<0.05',
     ],
+    python_requires='>=3.6',
     entry_points={
         'console_scripts': [
             'cocoa=hotchocolate.cli:cli',

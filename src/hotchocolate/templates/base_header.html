@@ -1,21 +1,21 @@
-<h1 id="brand"><a href="/">{{ site.name }}</a></h1>
+<h1 id="brand"><a href="/">{{ site.settings.name }}</a></h1>
 
-{% if site.subtitle %}
-<h2 id="subtitle">{{ site.subtitle }}</h2>
+{% if 'subtitle' in site.settings and site.settings.subtitle %}
+<h2 id="subtitle">{{ site.settings.subtitle }}</h2>
 {% endif %}
 
-{% if site.header_links %}
+{% if site.settings.header_links %}
 <div id="aside_links">
   <ul class="dot_list">
-  {% for link in site.header_links %}
-    <li><a href="{{ link }}">{{ site.header_links[link] }}</a></li>
+  {% for link, text in site.settings.header_links %}
+    <li><a href="{{ link }}">{{ text }}</a></li>
   {% endfor %}
 
   {#
     TODO: This will kick in if there's any non-empty value for the
     search_enabled setting.  Fix it to only allow boolean values.
     #}
-  {% if site.search_enabled %}
+  {% if 'search_enabled' in site.settings and site.settings.search_enabled %}
     <li id="search">
       <form action="/search" action="post">
         <input placeholder="search" name="q"></input>
