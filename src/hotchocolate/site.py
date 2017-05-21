@@ -3,6 +3,7 @@
 import os
 import shutil
 
+import bs4
 import htmlmin
 
 from . import css, templates
@@ -43,10 +44,15 @@ class NewSite:
     def add_css_to_html(self, css_string):
         """Insert CSS into all the rendered HTML pages."""
         for slug, html_str in self._prepared_html.items():
-            # TODO: Replace this with a proper parser for extracting the HTML.
-            # TODO: Remove all other <style> tags.
-            body_html = html_str.split('<body>')[1].split('</body>')[0]
+
+            # Find the body text for this page -- i.e., the HTML we want
+            # to compare the CSS with.
+            soup = bs4.BeautifulSoup(html_str)
+            body_html = ''.join([str(s) for s in soup.find('body').contents])
+
             min_css = css.minimal_css_for_html(body_html=body_html, css=css_string)
+
+            # TODO: Remove all other <style> tags.
 
             html_str = html_str.replace(
                 '<!-- hc_css_include -->', f'<style>{min_css}</style>'

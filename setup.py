@@ -36,6 +36,7 @@ setup(
     package_dir={'': SOURCE},
     include_package_data=True,
     install_requires=[
+        'beautifulsoup4>=4.6.0,<5',
         'click>=6.7,<7',
         'csscompressor>=0.9.4,<1',
         'docker>=2.0.2,<3',
