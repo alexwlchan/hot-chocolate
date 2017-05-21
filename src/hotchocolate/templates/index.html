@@ -9,10 +9,10 @@
 <hr/>
 {% endif %}
 
-{% for post in articles %}
+{% for post in posts %}
   {% with content = post.content.split('<!-- summary -->')[0]|safe %}
   {% with metadata = post.metadata %}
-    {% include "post.html.html" %}
+    {% include "post_content.html" %}
     {% if loop.index != articles|count %}<hr/>{% endif %}
   {% endwith %}
   {% endwith %}

@@ -20,8 +20,7 @@ from .settings import SiteSettings
 from .readers import list_page_files, list_post_files
 from .plugins import load_plugins
 from .templates import build_environment
-from .utils import lazy_copyfile, slugify
-from .writers import Pagination
+from .utils import Pagination, lazy_copyfile, slugify
 
 
 # TODO: Make this a setting
@@ -66,10 +65,10 @@ class Site:
 
         # Mapping from URL slugs to rendered HTML.
         # TODO: Check we don't write the same slug more than once.
-        self._rendered_html = {}
+        self._prepared_html = {}
 
     def write(self):
-        for slug, html_str in self._rendered_html.items():
+        for slug, html_str in self._prepared_html.items():
             self.write_html(slug=slug, html_str=html_str)
 
     def write_html(self, slug, html_str):
@@ -101,9 +100,9 @@ class Site:
         """
         self._prepare_posts()
         self._prepare_pages()
+        self._prepare_index(posts=self.posts)
 
         self._build_feeds()
-        self._build_index()
         self._build_tag_indices()
         self._copy_static_files()
         self._build_date_archives()
@@ -111,9 +110,7 @@ class Site:
         self.write()
 
     def _prepare_posts(self):
-        """
-        Prepare the HTML for posts.
-        """
+        """Prepare the HTML for posts."""
         post_template = self.env.get_template('post.html')
         for post in self.posts:
             html = post_template.render(
@@ -121,12 +118,10 @@ class Site:
                 metadata=post.metadata,
                 content=post.content
             )
-            self._rendered_html[post.url] = html
+            self._prepared_html[post.url] = html
 
     def _prepare_pages(self):
-        """
-        Prepare the HTML for pages.
-        """
+        """Prepare the HTML for pages."""
         page_template = self.env.get_template('page.html')
         for page in self.pages:
             html = page_template.render(
@@ -134,7 +129,7 @@ class Site:
                 metadata=page.metadata,
                 content=page.content
             )
-            self._rendered_html[page.url] = html
+            self._prepared_html[page.url] = html
 
     @classmethod
     def from_folder(cls, path):
@@ -202,13 +197,9 @@ class Site:
             open(os.path.join(feed_dir, 'all.atom.xml'), 'w'),
             encoding='utf-8')
 
-    def _build_index(self, posts=None, prefix='', title=None):
-        # TODO: Make this more generic
-        # TODO: Make pagination size a setting
-        template = self.env.get_template('index.html')
-
-        if posts is None:
-            posts = self.posts
+    def _prepare_index(self, posts, prefix='', title=None):
+        """Prepare the HTML for a set of index pages."""
+        index_template = self.env.get_template('index.html')
         posts = sorted(posts, key=lambda x: x.date, reverse=True)
 
         pagination = Pagination(
@@ -216,13 +207,16 @@ class Site:
         )
 
         for pageset in pagination:
-            html = template.render(
+            html = index_template.render(
                 site=self,
-                articles=pageset['articles'],
+                posts=pageset.posts,
                 title=title,
                 pageset=pageset
             )
-            self.write_html(pageset['slug'], html)
+            self._prepared_html[pageset.slug] = html
+
+    def _build_index(self, posts=None, prefix='', title=None):
+        self._prepare_index(posts=posts, prefix=prefix, title=title)
 
     def _build_date_archives(self):
         def get_month(p):
