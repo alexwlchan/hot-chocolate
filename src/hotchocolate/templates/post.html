@@ -31,12 +31,7 @@
     </ul>
   </div>
 
-  {% if is_index and '<!-- summary -->' in content %}
-    {{ content.split('<!-- summary -->')[0]|safe }}
-    <p><a href="/{{ metadata.url }}" class="continue_reading">Continue reading</a></p>
-  {% else %}
-    {{ content|safe }}
-  {% endif %}
+  {{ content|safe }}
 
 </article>
 

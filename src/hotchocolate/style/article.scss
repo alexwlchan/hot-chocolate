@@ -4,7 +4,7 @@ article {
   padding-bottom: 15px;
 }
 
-.article_title, .post_title, .page_title {
+.post_title, .page_title {
   font-size: 1.8em;
   line-height: 1.45em;
   a {
@@ -38,13 +38,13 @@ article {
   }
 }
 
-.article_meta, .post_meta {
+.post_meta {
   margin-top: -10px;
   &, a, a:visited {
     color: $accent-grey;
   }
   font-size: $meta-font-size;
-  .article_permalink, .post_permalink a {
+  .post_permalink a {
     &, &:visited {
       color: $primary-color;
     }
