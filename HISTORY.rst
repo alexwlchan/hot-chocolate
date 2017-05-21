@@ -1,6 +1,21 @@
 Release History
 ===============
 
+3.0.0 (2017-05-21)
+------------------
+
+A fairly significant rewrite of the internals:
+
+-  Now only supporting Python 3.6.
+-  Settings are now defined in TOML, not INI files.
+-  A big focus on writing more `"sans IO" <https://sans-io.readthedocs.io/>`_-style code, and putting some tests around it.
+-  Templates and styles now live in a site directory, rather than being a weird
+   (and undocumented) mixture of files in the site and in the package.
+-  There's no longer a network dependency as part of the build step.
+-  Hopefully quite a bit faster, less buggy, and easier to manage.
+
+Documentation is still fairly patchy/non-existent, but I'm trying to reduce the number of undocumented assumptions so that it becomes easy (or possible) for somebody else to reuse it.
+
 2.0.2 (2017-03-25)
 ------------------
 
