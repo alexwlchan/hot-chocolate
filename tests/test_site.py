@@ -30,3 +30,19 @@ class TestAddingCSStoHTML:
         }
         site.add_css_to_html(css_string=css_string)
         assert site._prepared_html['/'] == '<html><body><p>hello world</p></body></html>'
+
+    def test_inserting_relevant_css(self):
+        site = Site()
+        site._prepared_html = {
+            '/': '<html><head><!-- hc_css_include --></head><body><p>hello world</p></body></html>'
+        }
+        site.add_css_to_html(css_string='p { color: red; }')
+        assert site._prepared_html['/'] == '<html><head><style>p { color: red; }</style></head><body><p>hello world</p></body></html>'
+
+    def test_inserting_mixed_css(self):
+        site = Site()
+        site._prepared_html = {
+            '/': '<html><head><!-- hc_css_include --></head><body><p>hello world</p></body></html>'
+        }
+        site.add_css_to_html(css_string='em { color: green; } p { color: red; } strong { color: yellow; }')
+        assert site._prepared_html['/'] == '<html><head><style> p { color: red; }</style></head><body><p>hello world</p></body></html>'
