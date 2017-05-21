@@ -22,6 +22,7 @@ import csscompressor
 import mincss.processor as mp
 import scss.compiler
 
+# TODO: Make this a setting
 STYLE_DIR = 'style'
 
 

@@ -24,8 +24,9 @@ from .logging import info
 from .settings import SiteSettings
 from .readers import list_page_files, list_post_files
 from .plugins import load_plugins
+from .templates import build_environment
 from .utils import lazy_copyfile, slugify
-from .writers import CocoaEnvironment, Pagination
+from .writers import Pagination
 
 
 # TODO: Make this a setting
@@ -64,7 +65,7 @@ class Site:
         self.posts = []
         self._tagged_posts = collections.defaultdict(list)
         self.pages = []
-        self.env = CocoaEnvironment(self.path)
+        self.env = build_environment()
 
         self.base_css = optimize_css(load_base_css())
 
