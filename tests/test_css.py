@@ -3,13 +3,18 @@
 Tests for the CSS helpers.
 """
 
+import pytest
+
 from hotchocolate import css
 
 
-def test_cleancss_does_not_lengthen_output():
+@pytest.mark.parametrize('method', [css.cleancss, css.optimize])
+@pytest.mark.parametrize('css_string', [
+    'p { color: red; }',
+])
+def test_processor_does_not_lengthen_output(method, css_string):
     """
-    We can't guarantee that cleancss is installed or available in tests (yet),
-    so for now just test that it never causes length to increase.
+    All of the CSS processors should return CSS that is no longer than the
+    input they're passed.
     """
-    css_string = 'p { color: red; }'
-    assert len(css.cleancss(css_string)) <= len(css_string)
+    assert len(method(css_string)) <= len(css_string)

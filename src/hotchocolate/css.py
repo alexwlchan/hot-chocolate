@@ -23,6 +23,21 @@ import mincss.processor as mp
 import scss
 
 
+def optimize(css):
+    """
+    Given a CSS string, optimize and minify it as much as possible.
+    """
+    # Run it through the cleancss tool
+    css = cleancss(css)
+
+    # Minify it, stripping out comments and whitespace.  This is arguably
+    # redundant because cleancss can do this for us, but it's a good fallback
+    # if cleancss fails for some reason.
+    css = csscompressor.compress(css)
+
+    return css
+
+
 def cleancss(css):
     """
     Run the CSS through the cleancss Node tool
@@ -74,7 +89,7 @@ class CSSProcessor:
             os.path.join(os.path.dirname(__file__), 'style')
         ])
         self.base_scss = self.get_base_scss(path)
-        self.base_css = csscompressor.compress(self.get_base_css(path))
+        self.base_css = optimize(self.get_base_css(path))
 
     def get_base_scss(self, path):
         """
@@ -112,14 +127,7 @@ class CSSProcessor:
         Get the base site CSS, based on SCSS files in the package theme
         and anything in the ``style`` directory.
         """
-        css_str = self.scss_compiler.compile_string(self.base_scss)
-
-        # Loading the custom theme may have introduced redundant selectors
-        # (or heck, just carelessness from the person who wrote the CSS).
-        # Consolidate selectors so we don't have redundant styles.
-        css_str = cleancss(css_str)
-
-        return css_str
+        return self.scss_compiler.compile_string(self.base_scss)
 
     def insert_css_for_page(self, html_str):
         """
