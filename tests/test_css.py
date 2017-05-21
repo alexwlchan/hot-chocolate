@@ -45,7 +45,7 @@ def test_minimal_css_for_html(body_html, input_css, expected_css):
 
 
 def test_load_base_css_with_custom_style_dir(test_root):
-    style_dir = os.path.join(test_root, 'style')
+    style_dir = os.path.join(test_root, css.STYLE_DIR)
     result = css.load_base_css(style_dir=style_dir)
     assert result == 'p {\n  color: red; }\n'
 
