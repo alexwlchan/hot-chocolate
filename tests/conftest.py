@@ -1,5 +1,7 @@
 # -*- encoding: utf-8
 
+import os
+
 from markdown import Extension
 from markdown.preprocessors import Preprocessor
 import pytest
@@ -30,3 +32,8 @@ class EmptyExtension(Extension):
 @pytest.fixture
 def md_extension():
     return EmptyExtension()
+
+
+@pytest.fixture
+def test_root():
+    return os.path.dirname(os.path.abspath(__file__))

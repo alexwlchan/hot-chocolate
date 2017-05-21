@@ -19,7 +19,7 @@ if sys.version_info < (3, 4):  # noqa
     )
 
 from . import markdown
-from .css import CSSProcessor
+from .css import load_base_css, minimal_css_for_html, optimize_css
 from .logging import info
 from .settings import SiteSettings
 from .readers import list_page_files, list_post_files
@@ -65,7 +65,8 @@ class Site:
         self._tagged_posts = collections.defaultdict(list)
         self.pages = []
         self.env = CocoaEnvironment(self.path)
-        self.css_proc = CSSProcessor(self.path)
+
+        self.base_css = optimize_css(load_base_css())
 
     def write_html(self, slug, html_str):
         """
@@ -76,6 +77,14 @@ class Site:
         """
         slug = slug.lstrip('/')
         os.makedirs(os.path.join(self.out_path, slug), exist_ok=True)
+
+        # Insert any CSS into the page.
+        # TODO: Replace this with a proper parser for extracting the HTML.
+        body_html = html_str.split('<body>')[1].split('</body>')[0]
+        css = minimal_css_for_html(body_html=body_html, css=self.base_css)
+        html_str = html_str.replace(
+            '<!-- hc_css_include -->', f'<style>{css}</style>'
+        )
 
         html_str = self.css_proc.insert_css_for_page(html_str)
         html_str = htmlmin.minify(html_str)
@@ -245,6 +254,7 @@ class Article:
 
         # TODO: better error handling
         self.title = markdown.convert_markdown(metadata.pop('title'))
+        # [len('<p>'):-len('</p>')]
         self.slug = metadata.get('slug')
 
         try:
