@@ -33,7 +33,6 @@ class Site:
 
     def __init__(self, settings):
         self.path = os.path.abspath(os.curdir)
-        self.out_path = '_output'
         self.settings = settings
         validate_settings(self.settings)
 
@@ -80,9 +79,9 @@ class Site:
         pretty URLs without needing web server configuration.
         """
         slug = slug.lstrip('/')
-        os.makedirs(os.path.join(self.out_path, slug), exist_ok=True)
+        os.makedirs(os.path.join(site.OUTPUT_DIR, slug), exist_ok=True)
 
-        with open(os.path.join(self.out_path, slug, 'index.html'), 'w') as f:
+        with open(os.path.join(site.OUTPUT_DIR, slug, 'index.html'), 'w') as f:
             f.write(html_str)
 
     def build(self):
@@ -239,7 +238,7 @@ class Site:
 
             feed.add_item(**post_kwargs)
 
-        feed_dir = os.path.join(self.out_path, 'feeds')
+        feed_dir = os.path.join(site.OUTPUT_DIR, 'feeds')
         os.makedirs(feed_dir, exist_ok=True)
         feed.write(
             open(os.path.join(feed_dir, 'all.atom.xml'), 'w'),
@@ -254,7 +253,7 @@ class Site:
                     self.path + '/static/', '')
                 lazy_copyfile(
                     src=os.path.join(self.path, 'static', base),
-                    dst=os.path.join(self.out_path, base),
+                    dst=os.path.join(site.OUTPUT_DIR, base),
                 )
 
 
