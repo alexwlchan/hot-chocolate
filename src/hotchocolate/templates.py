@@ -3,7 +3,7 @@
 Provides template utilities.
 """
 
-from jinja2 import Environment, FileSystemLoader, select_autoescape
+import jinja2
 
 from . import markdown as md, plugins
 
@@ -28,9 +28,10 @@ def build_environment(template_dir=None):
     """Build the appropriate Jinja2 environment."""
     if template_dir is None:
         template_dir = TEMPLATE_DIR
-    env = Environment(
-        loader=FileSystemLoader(template_dir),
-        autoescape=select_autoescape(['html'])
+    env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader(template_dir),
+        autoescape=jinja2.select_autoescape(['html']),
+        undefined=jinja2.StrictUndefined
     )
 
     # TODO: Extension mechanism for additional filters?

@@ -1,7 +1,7 @@
 <article class="post">
 
-  <h1 class="post_title{% if metadata.link %} linkpost_title{% endif %}">
-    <a href="{% if metadata.link %}{{ metadata.link }}{% else %}/{{ metadata.url }}{% endif %}">{{ metadata.title|title|safe }}</a>
+  <h1 class="post_title{% if 'link' in metadata %} linkpost_title{% endif %}">
+    <a href="{% if 'link' in metadata %}{{ metadata.link }}{% else %}/{{ metadata.url }}{% endif %}">{{ metadata.title|title|safe }}</a>
   </h1>
 
   <div class="post_meta">
@@ -20,7 +20,7 @@
         {% endfor %}</li>
       {% endif %}
 
-      {% if metadata.link %}
+      {% if 'link' in metadata %}
       <li class="post_permalink"><a href="/{{ metadata.url }}">&infin;</a></li>
       {% endif %}
 

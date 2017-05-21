@@ -87,7 +87,7 @@ class Site:
         """
         Build the complete site and write it to the output folder.
         """
-        self.posts = sorted(self.posts, key=lambda x: x.date, reverse=True)
+        self.posts = sorted(self.posts, key=lambda x: x.metadata['date'], reverse=True)
 
         self._prepare_posts()
         self._prepare_pages()
@@ -111,7 +111,7 @@ class Site:
                 metadata=post.metadata,
                 content=post.content
             )
-            self._prepared_html[post.url] = html
+            self._prepared_html[post.metadata['url']] = html
 
     def _prepare_pages(self):
         """Prepare the HTML for pages."""
@@ -122,12 +122,12 @@ class Site:
                 metadata=page.metadata,
                 content=page.content
             )
-            self._prepared_html[page.url] = html
+            self._prepared_html[page.metadata['url']] = html
 
     def _prepare_index(self, posts, prefix='', title=None):
         """Prepare the HTML for a set of index pages."""
         index_template = self.env.get_template('index.html')
-        posts = sorted(posts, key=lambda x: x.date, reverse=True)
+        posts = sorted(posts, key=lambda x: x.metadata['date'], reverse=True)
 
         pagination = Pagination(
             posts=posts, page_size=PAGE_SIZE, prefix=prefix
@@ -145,7 +145,7 @@ class Site:
     def _prepare_date_index(self):
         """Prepare the HTML for the date-based index."""
         def get_month(p):
-            return date(p.date.year, p.date.month, 1)
+            return date(p.metadata['date'].year, p.metadata['date'].month, 1)
 
         for m, posts in itertools.groupby(self.posts, get_month):
             self._prepare_index(
@@ -158,7 +158,7 @@ class Site:
         archive_template = self.env.get_template('archive.html')
 
         def get_year(p):
-            return p.date.year
+            return p.metadata['date'].year
 
         html = archive_template.render(
             site=self,
@@ -211,8 +211,8 @@ class Site:
         for post in reversed(self.posts):
             post_kwargs = {
                 'title': post.metadata['title'],
-                'link': self.settings['url'] + post.url,
-                'pubdate': post.date,
+                'link': self.settings['url'] + post.metadata['url'],
+                'pubdate': post.metadata['date'],
                 'content': post.content,
             }
             if post.metadata.get('link') is not None:
@@ -221,7 +221,7 @@ class Site:
                 post_kwargs['description'] = post.metadata['summary']
             else:
                 post_kwargs['description'] = post_kwargs['content']
-            post_kwargs['unique_id'] = get_tag_uri(post_kwargs['link'], post.date)
+            post_kwargs['unique_id'] = get_tag_uri(post_kwargs['link'], post.metadata['date'])
 
             if '<blockquote class="update">' in post.content:
                 update_strings = re.findall(
@@ -263,7 +263,10 @@ class Article:
         self.metadata = metadata
         self.path = path
 
-        self.slug = metadata.get('slug')
+        if 'slug' not in self.metadata:
+            self.metadata['slug'] = slugify(self.metadata['title'])
+
+        self.metadata['url'] = self.metadata['slug']
 
         try:
             self.metadata['tags'] = sorted([
@@ -277,20 +280,6 @@ class Article:
 
     def __repr__(self):
         return '<%s path=%r>' % (type(self).__name__, self.path)
-
-    @property
-    def slug(self):
-        if self._slug is None:
-            self._slug = slugify(self.metadata['title'])
-        return self._slug
-
-    @slug.setter
-    def slug(self, value):
-        self._slug = value
-
-    @property
-    def url(self):
-        return self.slug
 
     @classmethod
     def from_string(cls, path, file_contents):
@@ -326,11 +315,4 @@ class Post(Article):
     def __init__(self, content, metadata, path):
         super().__init__(content, metadata, path)
         self.metadata['date'] = dp.parse(self.metadata['date'])
-
-    @property
-    def url(self):
-        return self.date.strftime('%Y/%m/') + self.slug
-
-    @property
-    def date(self):
-        return self.metadata['date']
+        self.metadata['url'] = self.metadata['date'].strftime('%Y/%m/') + self.metadata['slug']

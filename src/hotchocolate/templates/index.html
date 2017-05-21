@@ -13,7 +13,7 @@
   {% with content = post.content.split('<!-- summary -->')[0]|safe %}
   {% with metadata = post.metadata %}
     {% include "post_content.html" %}
-    {% if loop.index != articles|count %}<hr/>{% endif %}
+    {% if loop.index != posts|count %}<hr/>{% endif %}
   {% endwith %}
   {% endwith %}
 {% endfor %}

@@ -1,6 +1,6 @@
 <h1 id="brand"><a href="/">{{ site.settings.name }}</a></h1>
 
-{% if site.settings.subtitle %}
+{% if 'subtitle' in site.settings and site.settings.subtitle %}
 <h2 id="subtitle">{{ site.settings.subtitle }}</h2>
 {% endif %}
 
@@ -15,7 +15,7 @@
     TODO: This will kick in if there's any non-empty value for the
     search_enabled setting.  Fix it to only allow boolean values.
     #}
-  {% if site.settings.search_enabled %}
+  {% if 'search_enabled' in site.settings and site.settings.search_enabled %}
     <li id="search">
       <form action="/search" action="post">
         <input placeholder="search" name="q"></input>

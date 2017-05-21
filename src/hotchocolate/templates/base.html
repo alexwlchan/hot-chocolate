@@ -20,7 +20,12 @@
 
   {% include "base_head.html" %}
 
-  <title>{% if title %}{{ title|striptags }} &mdash; {% endif %}{{ site.settings.name }}</title>
+  <title>{% if metadata is defined and 'title' in metadata %}
+      {{ metadata.title|striptags }} &mdash;
+    {% elif title %}
+      {{ title|striptags }} &mdash;
+    {% endif %}{{ site.settings.name }}</title>
+</title>
 </head>
 
 <body>

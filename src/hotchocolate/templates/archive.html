@@ -13,7 +13,7 @@
   <ul>
     {% for post in posts %}
     <li>
-      <div class="archive_date">{{ post.date.strftime('%b %-d') }}</div> <a href="/{{ post.metadata.url }}">{{ post.metadata.title|title|safe }}</a>
+      <div class="archive_date">{{ post.metadata['date'].strftime('%b %-d') }}</div> <a href="/{{ post.metadata.url }}">{{ post.metadata.title|title|safe }}</a>
     </li>
     {% endfor %}
   </ul>
