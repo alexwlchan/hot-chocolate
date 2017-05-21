@@ -47,6 +47,7 @@ setup(
         'mincss>=0.11.2,<0.12',
         'Pygments>=2.2.0,<3',
         'pyScss>=1.3.5,<2',
+        'toml>=0.9.2,<1',
         'unidecode>=0.04.20,<0.05',
     ],
     python_requires='>=3.6',

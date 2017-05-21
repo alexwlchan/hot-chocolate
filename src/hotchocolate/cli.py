@@ -12,7 +12,6 @@ import requests
 
 from . import Site
 from .logging import success
-from .settings import create_new_settings
 from .utils import slugify
 
 
