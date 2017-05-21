@@ -1,11 +1,5 @@
 # -*- encoding: utf-8
 
-import os
-import tempfile
-
-from jinja2 import (
-    Environment, FileSystemLoader, PackageLoader, select_autoescape)
-
 from .utils import chunks
 
 
