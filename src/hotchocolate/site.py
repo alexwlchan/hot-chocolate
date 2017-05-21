@@ -16,7 +16,7 @@ def create_site(site_dir):
     create_new_settings(site_dir)
 
     for dirname in ('pages', 'posts', 'static'):
-        os.makedirs(dirname, exist_ok=True)
+        os.makedirs(os.path.join(site_dir, dirname), exist_ok=True)
 
     for dirname in [css.STYLE_DIR, templates.TEMPLATE_DIR]:
         shutil.copytree(
