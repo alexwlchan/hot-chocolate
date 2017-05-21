@@ -13,14 +13,13 @@ import sys
 import dateutil.parser as dp
 import htmlmin
 from feedgenerator import Atom1Feed, get_tag_uri
-import toml
 
 from . import logging, markdown
 from .css import load_base_css, minimal_css_for_html, optimize_css
 from .logging import info
 from .readers import list_page_files, list_post_files
 from .plugins import load_plugins
-from .settings import validate_settings
+from .settings import load_settings, validate_settings
 from .templates import build_environment
 from .utils import Pagination, lazy_copyfile, slugify
 
@@ -189,11 +188,7 @@ class Site:
         """Construct a ``Site`` instance from a folder on disk."""
         load_plugins(os.path.join(os.path.abspath(path), 'plugins'))
 
-        new_settings = toml.loads(open(
-            os.path.join(path, 'settings.toml')
-        ).read())['hotchocolate']
-
-        site = cls(settings=new_settings)
+        site = cls(settings=load_settings(path))
         for path in list_post_files(site.path):
             info('Reading post from file %s',
                 path.replace(site.path, '').lstrip('/'))
