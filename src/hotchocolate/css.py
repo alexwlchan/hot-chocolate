@@ -20,7 +20,9 @@ import tempfile
 
 import csscompressor
 import mincss.processor as mp
-import scss
+import scss.compiler
+
+STYLE_DIR = 'style'
 
 
 def optimize(css):
@@ -83,6 +85,17 @@ def minimal_css_for_html(body_html, css):
     return proc.render_html(body_html=body_html, css=css)
 
 
+def load_base_css(style_dir=None):
+    """
+    Load the ``style.scss`` file from the site's ``style`` directory, and
+    return the base CSS for the site.
+    """
+    if style_dir is None:
+        style_dir = STYLE_DIR
+
+    return scss.compiler.compile_file(os.path.join(style_dir, 'style.scss'))
+
+
 class CSSProcessor:
     """
     Entry point for the CSS generator.
@@ -93,46 +106,14 @@ class CSSProcessor:
             os.path.join('style'),
             os.path.join(os.path.dirname(__file__), 'style')
         ])
-        self.base_scss = self.get_base_scss(path)
         self.base_css = optimize(self.get_base_css(path))
-
-    def get_base_scss(self, path):
-        """
-        Get the base site SCSS.
-        """
-        # First we get the theme from the package itself.  This is kept
-        # in ``style/main.scss`` within the package directory.
-        # TODO: Is the `style` directory included in the package manifest?
-        scss_str = open(
-            os.path.join(os.path.dirname(__file__), 'style', 'main.scss')
-        ).read()
-
-        # Next look for ``style/variables.scss`` in the site directory, and
-        # try to add that.  If it doesn't exist, use the base theme.
-        try:
-            variables_scss = open(
-                os.path.join(path, 'style', 'variables.scss')
-            ).read()
-            scss_str = variables_scss + scss_str
-        except FileNotFoundError:
-            pass
-
-        try:
-            custom_scss = open(
-                os.path.join(path, 'style', 'custom.scss')
-            ).read()
-            scss_str = scss_str + custom_scss
-        except FileNotFoundError:
-            pass
-
-        return scss_str
 
     def get_base_css(self, path):
         """
         Get the base site CSS, based on SCSS files in the package theme
         and anything in the ``style`` directory.
         """
-        return self.scss_compiler.compile_string(self.base_scss)
+        return load_base_css()
 
     def insert_css_for_page(self, html_str):
         """

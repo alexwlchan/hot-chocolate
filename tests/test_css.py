@@ -3,6 +3,8 @@
 Tests for the CSS helpers.
 """
 
+import os
+
 import pytest
 
 from hotchocolate import css
@@ -40,3 +42,9 @@ def test_processor_does_not_lengthen_output(method, css_string):
 def test_minimal_css_for_html(body_html, input_css, expected_css):
     result = css.minimal_css_for_html(body_html=body_html, css=input_css)
     assert result == expected_css
+
+
+def test_load_base_css(test_root):
+    style_dir = os.path.join(test_root, 'style')
+    result = css.load_base_css(style_dir=style_dir)
+    assert result == 'p {\n  color: red; }\n'
