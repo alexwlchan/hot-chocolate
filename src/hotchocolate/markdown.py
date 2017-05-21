@@ -15,7 +15,7 @@ from markdown.extensions.meta import MetaExtension
 from markdown.extensions.smarty import SmartyExtension
 
 
-def convert_markdown(source, extra_extensions=None, path=None):
+def convert_markdown(source, extra_extensions=None):
     """
     Convert a Markdown string into HTML.  Returns an (HTML, metadata) tuple.
 

@@ -14,11 +14,10 @@ import dateutil.parser as dp
 import htmlmin
 from feedgenerator import Atom1Feed, get_tag_uri
 
-from . import logging, markdown
+from . import logging, markdown, plugins
 from .css import load_base_css, minimal_css_for_html, optimize_css
 from .logging import info
 from .readers import list_page_files, list_post_files
-from .plugins import load_plugins
 from .settings import load_settings, validate_settings
 from .templates import build_environment
 from .utils import Pagination, lazy_copyfile, slugify
@@ -185,8 +184,6 @@ class Site:
     @classmethod
     def from_folder(cls, path):
         """Construct a ``Site`` instance from a folder on disk."""
-        load_plugins(os.path.join(os.path.abspath(path), 'plugins'))
-
         site = cls(settings=load_settings(path))
         for path in list_post_files(site.path):
             info('Reading post from file %s',
@@ -298,7 +295,10 @@ class Article:
     @classmethod
     def from_string(cls, path, file_contents):
         """Construct an instance from a string read from a file."""
-        html, metadata = markdown.convert_markdown(file_contents, path=path)
+        html, metadata = markdown.convert_markdown(
+            file_contents,
+            extra_extensions=plugins.load_markdown_extensions()
+        )
 
         metadata = {k: v[0] for k, v in metadata.items()}
 

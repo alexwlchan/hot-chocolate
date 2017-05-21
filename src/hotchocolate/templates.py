@@ -5,7 +5,7 @@ Provides template utilities.
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from . import markdown as md
+from . import markdown as md, plugins
 
 # TODO: Make this a setting
 TEMPLATE_DIR = 'templates'
@@ -18,7 +18,10 @@ def locale_date(date):
 
 
 def render_title(title):
-    return md.convert_markdown(title)[0].replace('<p>', '').replace('</p>', '')
+    return md.convert_markdown(
+        title,
+        extra_extensions=plugins.load_markdown_extensions()
+    )[0].replace('<p>', '').replace('</p>', '')
 
 
 def build_environment(template_dir=None):
