@@ -8,16 +8,12 @@ import markdown
 
 
 class MarkdownExtensionMixin(markdown.Extension):
-    """
-    Stub class for importing additional Markdown extensions.
-    """
+    """Stub class for importing additional Markdown extensions."""
     pass
 
 
 def load_plugins(plugin_dir):
-    """
-    Load any plugins from the plugin directory.
-    """
+    """Load any plugins from the plugin directory."""
     orig_path = list(sys.path)
     sys.path.append(os.path.basename(plugin_dir))
     for path in glob.iglob('%s/*.py' % plugin_dir):
@@ -26,8 +22,6 @@ def load_plugins(plugin_dir):
 
 
 def load_markdown_extensions():
-    """
-    Return any ``MarkdownExtension`` plugins.
-    """
+    """Return any ``MarkdownExtension`` plugins."""
     load_plugins(os.path.join(os.path.abspath(os.curdir), 'plugins'))
     return [e() for e in MarkdownExtensionMixin.__subclasses__()]

@@ -66,6 +66,7 @@ class Site:
         self._prepared_html = {}
 
     def write(self):
+        """Write all the prepared HTML to files on disk."""
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             futures = {
                 executor.submit(self.write_html, slug, html_str): slug
@@ -204,9 +205,7 @@ class Site:
 
     @classmethod
     def from_folder(cls, path):
-        """
-        Construct a ``Site`` instance from a folder on disk.
-        """
+        """Construct a ``Site`` instance from a folder on disk."""
         load_plugins(os.path.join(os.path.abspath(path), 'plugins'))
         site = cls()
         for path in list_post_files(site.path):

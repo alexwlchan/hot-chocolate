@@ -27,9 +27,7 @@ STYLE_DIR = 'style'
 
 
 def optimize_css(css):
-    """
-    Given a CSS string, optimize and minify it as much as possible.
-    """
+    """Given a CSS string, optimize and minify it as much as possible."""
     # Run it through the cleancss tool
     css = cleancss(css)
 
@@ -62,9 +60,7 @@ def cleancss(css):
 
 
 class _InMemoryProcessor(mp.Processor):
-    """
-    A wrapper for doing in-memory stripping of unused CSS rules.
-    """
+    """A wrapper for doing in-memory stripping of unused CSS rules."""
     # The internals of this class are a bit messy and don't present themselves
     # well to doing in-memory operations: they expect to go out to the
     # filesystem and read files.  We have to change a few internal pieces
@@ -79,9 +75,7 @@ class _InMemoryProcessor(mp.Processor):
 
 
 def minimal_css_for_html(body_html, css):
-    """
-    Returns the minimal CSS required to render a block of body HTML.
-    """
+    """Returns the minimal CSS required to render a block of body HTML."""
     proc = _InMemoryProcessor()
     return proc.render_html(body_html=body_html, css=css)
 
