@@ -82,9 +82,9 @@ class Site:
             # Insert any CSS into the page.
             # TODO: Replace this with a proper parser for extracting the HTML.
             body_html = html_str.split('<body>')[1].split('</body>')[0]
-            css = minimal_css_for_html(body_html=body_html, css=css)
+            min_css = minimal_css_for_html(body_html=body_html, css=css)
             html_str = html_str.replace(
-                '<!-- hc_css_include -->', f'<style>{css}</style>'
+                '<!-- hc_css_include -->', f'<style>{min_css}</style>'
             )
 
             html_str = htmlmin.minify(html_str)
