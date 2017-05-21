@@ -1,92 +1,46 @@
 # -*- encoding: utf-8
 """
-This file contains the CSS pipeline for Hot Chocolate.
+Implements the CSS processors.
 
-CSS is an area where static site generation can make a big performance win.
-There's a threshhold around 12KB where it becomes more efficient to
-inline your CSS than make a second TCP request -- but at the cost of no
-caching.  H/C is intended for sites with very small CSS files -- often less
-than half the 12KB threshhold -- so inlining makes a lot of sense.
+Because static site generators do all their processing upfront, you can
+spend time in the build step optimising the CSS for the smallest size.
+Remove duplicate selectors, optimise layout, minify, etc.
 
-Once you have inlining in each page, you can use the compile step to make
-it as efficient as possible:
-
-*   Minify the CSS
-*   Remove selectors that aren't used in the current page
-*   Consolidate selectors to minimise the CSS size
+Hot Chocolate goes one step further -- it's designed for sites with a very
+small CSS footprint (single-digit KB), so it puts the CSS in a <style> tag
+within the <head> of the page -- after reducing it to only the selectors
+required to render the current page.  This means that every page loads the
+smallest amount of CSS it can get away with.
 
 """
 
-import html
 import os
-import re
+import subprocess
+import tempfile
 
 import csscompressor
 import mincss.processor as mp
-import requests
 import scss
 
-from .logging import warning
 
-
-def _get_consolidated_css(css_str):
+def cleancss(css):
     """
-    Try to get a consolidated CSS string using http://www.codebeautifier.com/.
+    Run the CSS through the cleancss Node tool
+    (https://github.com/jakubpawlowicz/clean-css).
 
-    If this fails it's not a disaster, we just might have slightly more
-    inefficient CSS strings, so we only warn on exceptions.
+    If the tool is unavailable, it just returns the CSS string unmodified.
     """
+    # To run cleancss, the CSS must be in a file.
+    _, path = tempfile.mkstemp()
+    with open(path, 'w') as fp:
+        fp.write(css)
+
     try:
-        r = requests.post(
-            'http://www.codebeautifier.com/',
-            data={'css_text': css_str},
-            timeout=2
-        )
-        encoded_css = r.text.split('<code id="code">')[1].split('</code>')[0]
-        encoded_css = re.sub(r'<[^>]+>', r'', encoded_css)
-
-        # If there were characters that get HTML encoded in the CSS, we
-        # need to turn them back into literal characters.  For example:
-        #
-        #     a:before { content: "foo"; }
-        #
-        # becomes
-        #
-        #     a:before { content: &quot;foo&quot;; }
-        #
-        encoded_css = html.unescape(encoded_css)
-
-        # There's an interesting bug with CodeBeautifier, possibly because
-        # it runs to an old version of the CSS spec, where it mangles media
-        # queries.  Specifically, this:
-        #
-        #     @media screen and (max-width: 500px) { a { color: red; } }
-        #
-        # becomes:
-        #
-        #     @media screen and max-width 500px { a { color: red; } }
-        #
-        # which no longer works.  Fix that up by hand: the media queries
-        # used in Hot Chocolate sites should be fairly simple.
-        #
-        encoded_css = re.sub(
-            r'@media screen and (max|min)-width ([0-9]+)px',
-            r'@media screen and (\1-width: \2px)',
-            encoded_css
-        )
-
-        # It also scrambles expressions of the form `calc(x + y)` by
-        # taking the spaces around the + sign.
-        encoded_css = re.sub(
-            r'calc\(([0-9%pxem]+)\+([0-9%pxem]+)\)',
-            r'calc(\1 + \2)',
-            encoded_css
-        )
-
-        return encoded_css
-    except Exception as exc:
-        warning('Unable to minify CSS with CodeBeautifier: %s' % exc)
-        return css_str
+        return subprocess.check_output(['cleancss', '-O', '2', path])
+    except (OSError, subprocess.CalledProcessError):
+        return css
+    finally:
+        os.unlink(path)
 
 
 class CSSMinimiser(mp.Processor):
@@ -163,7 +117,7 @@ class CSSProcessor:
         # Loading the custom theme may have introduced redundant selectors
         # (or heck, just carelessness from the person who wrote the CSS).
         # Consolidate selectors so we don't have redundant styles.
-        css_str = _get_consolidated_css(css_str)
+        css_str = cleancss(css_str)
 
         return css_str
 
