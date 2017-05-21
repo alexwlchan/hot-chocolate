@@ -86,7 +86,6 @@ class Site:
             '<!-- hc_css_include -->', f'<style>{css}</style>'
         )
 
-        html_str = self.css_proc.insert_css_for_page(html_str)
         html_str = htmlmin.minify(html_str)
 
         with open(os.path.join(self.out_path, slug, 'index.html'), 'w') as f:
