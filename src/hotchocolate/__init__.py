@@ -57,7 +57,6 @@ class Site:
         self.settings = SiteSettings(self.path)
 
         self.posts = []
-        self._tagged_posts = collections.defaultdict(list)
         self.pages = []
         self.env = build_environment()
 
@@ -105,9 +104,9 @@ class Site:
         self._prepare_index(posts=self.posts)
         self._prepare_date_index()
         self._prepare_archive()
+        self._prepare_tag_index()
 
         self._build_feeds()
-        self._build_tag_indices()
         self._copy_static_files()
         self.write()
 
@@ -176,6 +175,20 @@ class Site:
         )
         self._prepared_html['/archives/'] = html
 
+    def _prepare_tag_index(self):
+        """Prepare the HTML for the tag-based index."""
+        tags = collections.defaultdict(list)
+        for p in self.posts:
+            for t in p.tags:
+                tags[t].append(p)
+
+        for t, posts in tags.items():
+            self._prepare_index(
+                posts=posts,
+                prefix='/tag/%s' % t,
+                title='Tagged with “%s”' % t
+            )
+
     @classmethod
     def from_folder(cls, path):
         """
@@ -186,10 +199,7 @@ class Site:
         for path in list_post_files(site.path):
             info('Reading post from file %s',
                 path.replace(site.path, '').lstrip('/'))
-            p = Post.from_file(path)
-            for t in p.tags:
-                site._tagged_posts[t].append(p)
-            site.posts.append(p)
+            site.posts.append(Post.from_file(path))
 
         for path in list_page_files(site.path):
             info(
@@ -241,16 +251,6 @@ class Site:
         feed.write(
             open(os.path.join(feed_dir, 'all.atom.xml'), 'w'),
             encoding='utf-8')
-
-    def _build_index(self, posts=None, prefix='', title=None):
-        self._prepare_index(posts=posts, prefix=prefix, title=title)
-
-    def _build_tag_indices(self):
-        for t, posts in self._tagged_posts.items():
-            self._build_index(
-                posts=posts,
-                prefix='/tag/%s' % t,
-                title='Tagged with “%s”' % t)
 
     def _copy_static_files(self):
         for root, _, filenames in os.walk(os.path.join(self.path, 'static')):
