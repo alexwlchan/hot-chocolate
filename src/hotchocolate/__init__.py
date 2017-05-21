@@ -17,9 +17,9 @@ from feedgenerator import Atom1Feed, get_tag_uri
 from . import logging, markdown
 from .css import load_base_css, minimal_css_for_html, optimize_css
 from .logging import info
-from .settings import SiteSettings
 from .readers import list_page_files, list_post_files
 from .plugins import load_plugins
+from .settings import load_settings, validate_settings
 from .templates import build_environment
 from .utils import Pagination, lazy_copyfile, slugify
 
@@ -28,34 +28,14 @@ from .utils import Pagination, lazy_copyfile, slugify
 PAGE_SIZE = 10
 
 
-class _SiteSettingDescriptor:
-    def __init__(self, section, option):
-        self.section = section
-        self.option = option
-
-    def __get__(self, instance, type):
-        return instance.settings.get(self.section, self.option)
-
-
 class Site:
-    """
-    Holds the settings for an individual site.
-    """
+    """Represents a single site."""
 
-    name            = _SiteSettingDescriptor('site', 'name')
-    url             = _SiteSettingDescriptor('site', 'url')
-    header_links    = _SiteSettingDescriptor('site', 'header_links')
-    language        = _SiteSettingDescriptor('site', 'language')
-    subtitle        = _SiteSettingDescriptor('site', 'subtitle')
-    search_enabled  = _SiteSettingDescriptor('site', 'search_enabled')
-    author          = _SiteSettingDescriptor('site', 'author')
-    author_email    = _SiteSettingDescriptor('site', 'author_email')
-    description     = _SiteSettingDescriptor('site', 'description')
-
-    def __init__(self):
+    def __init__(self, settings):
         self.path = os.path.abspath(os.curdir)
         self.out_path = '_output'
-        self.settings = SiteSettings(self.path)
+        self.settings = settings
+        validate_settings(self.settings)
 
         self.posts = []
         self.pages = []
@@ -207,7 +187,8 @@ class Site:
     def from_folder(cls, path):
         """Construct a ``Site`` instance from a folder on disk."""
         load_plugins(os.path.join(os.path.abspath(path), 'plugins'))
-        site = cls()
+
+        site = cls(settings=load_settings(path))
         for path in list_post_files(site.path):
             info('Reading post from file %s',
                 path.replace(site.path, '').lstrip('/'))
@@ -223,18 +204,18 @@ class Site:
 
     def _build_feeds(self):
         feed_kwargs = {
-            'title': self.name,
-            'link': self.url + '/feeds/all.atom.xml',
-            'description': self.description,
-            'author_name': self.author,
-            'author_email': self.author_email,
+            'title': self.settings['name'],
+            'link': self.settings['url'] + '/feeds/all.atom.xml',
+            'description': self.settings['description'],
+            'author_name': self.settings['author'],
+            'author_email': self.settings['author_email'],
         }
         feed = Atom1Feed(**feed_kwargs)
 
         for post in reversed(self.posts):
             post_kwargs = {
                 'title': post.metadata['title'],
-                'link': self.url + post.url,
+                'link': self.settings['url'] + post.url,
                 'pubdate': post.date,
                 'content': post.content,
             }
@@ -329,9 +310,7 @@ class Article:
 
     @classmethod
     def from_file(cls, path):
-        """
-        Construct an ``Article`` instance from a file on disk.
-        """
+        """Construct an ``Article`` instance from a file on disk."""
         file_contents = open(path).read()
         return cls.from_string(path=path, file_contents=file_contents)
 

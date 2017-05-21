@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ site.language }}">
+<html lang="{{ site.settings.language }}">
 
 <head>
 
@@ -7,20 +7,20 @@
     This HTML comment will be expanded to include the CSS declaration
     and/or a link to a CSS file as appropriate.
   #}
-  <!-- hc_css_include -->
+  <!-- ha_css_include -->
 
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  {% if site.author %}
-    <meta name="author" content="{{ site.author }}" />
+  {% if site.settings.author %}
+    <meta name="author" content="{{ site.settings.author }}" />
   {% endif %}
-  {% if site.description %}
-    <meta name="description" content="{{ site.description }}" />
+  {% if site.settings.description %}
+    <meta name="description" content="{{ site.settings.description }}" />
   {% endif %}
 
   {% include "base_head.html" %}
 
-  <title>{% if title %}{{ title|striptags }} &mdash; {% endif %}{{ site.name }}</title>
+  <title>{% if title %}{{ title|striptags }} &mdash; {% endif %}{{ site.settings.name }}</title>
 </head>
 
 <body>

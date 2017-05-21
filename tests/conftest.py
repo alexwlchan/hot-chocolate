@@ -37,3 +37,16 @@ def md_extension():
 @pytest.fixture
 def test_root():
     return os.path.dirname(os.path.abspath(__file__))
+
+
+@pytest.fixture
+def settings_dict():
+    """Returns a complete set of site settings."""
+    return {
+        'name': 'Jane Doe',
+        'url': 'https://example.org',
+        'author': 'Jane Doe',
+        'author_email': 'jane.doe@example.org',
+        'description': 'An example website',
+        'language': 'en',
+    }

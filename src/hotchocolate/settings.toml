@@ -1,0 +1,10 @@
+[hotchocolate]
+name = "Example Website"
+url = "https://example.org/"
+
+author = "Jane Doe"
+author_email = "jane.doe@example.org"
+
+description = "A description of Jane Doe's blog"
+
+language = "en"
