@@ -47,7 +47,7 @@ class NewSite:
 
             # Find the body text for this page -- i.e., the HTML we want
             # to compare the CSS with.
-            soup = bs4.BeautifulSoup(html_str)
+            soup = bs4.BeautifulSoup(html_str, 'html.parser')
             body_html = ''.join([str(s) for s in soup.find('body').contents])
 
             min_css = css.minimal_css_for_html(

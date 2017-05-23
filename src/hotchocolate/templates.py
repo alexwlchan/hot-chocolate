@@ -14,7 +14,7 @@ TEMPLATE_DIR = 'templates'
 # TODO: Make this a setting
 def locale_date(date):
     """Render a date in the current locale date."""
-    return date.strftime('%-d %B %Y')
+    return date.strftime('%d %B %Y').lstrip('0')
 
 
 def render_title(title):
