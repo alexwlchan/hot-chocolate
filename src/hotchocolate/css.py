@@ -52,7 +52,8 @@ def cleancss(css):
         fp.write(css)
 
     try:
-        return subprocess.check_output(['cleancss', '-O', '2', path])
+        return subprocess.check_output(
+            ['cleancss', '-O', '2', path]).decode('utf8')
     except (OSError, subprocess.CalledProcessError):
         return css
     finally:
