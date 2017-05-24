@@ -6,6 +6,7 @@ import os
 import re
 import shutil
 
+import lxml.etree as etree
 from unidecode import unidecode
 
 
@@ -81,3 +82,18 @@ class Pagination:
                 next_ = '/%s/%d/' % (prefix, pageno + 1)
 
             yield Pageset(slug, posts, next_, prev_)
+
+
+def minify_xml(xml_string):
+    """
+    Remove insignificant whitespace from an XML string.
+    """
+    # Taken from the lxml docs: http://lxml.de/tutorial.html#parser-objects
+    parser = etree.XMLParser(remove_blank_text=True)
+    root = etree.XML(xml_string, parser)
+
+    for element in root.iter('*'):
+        if (element.text is not None) and not element.text.strip():
+            element.text = None
+
+    return etree.tostring(root).decode('ascii')
