@@ -99,4 +99,3 @@ def write_all_feeds(output_dir, site, posts, max_posts=MAX_POSTS):
     rss_xml = build_rss_feed(site=site, posts=posts, max_posts=max_posts)
     with open(os.path.join(feed_dir, 'rss.xml'), 'w') as f:
         f.write(rss_xml)
-

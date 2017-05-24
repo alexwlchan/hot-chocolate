@@ -75,7 +75,7 @@ def test_updated_date_is_included(settings_dict, example_post):
     assert feed_xml.count('<updated>') == 2
 
 
-def test_updated_date_is_included(settings_dict, example_post):
+def test_summary_is_included(settings_dict, example_post):
     site = Site(settings=settings_dict)
     example_post.metadata['summary'] = 'A story about snails'
     feed_xml = feeds.build_atom_feed(
