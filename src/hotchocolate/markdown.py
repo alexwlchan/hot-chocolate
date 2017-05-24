@@ -7,6 +7,7 @@ HTML, and then returns the HTML.  It doesn't do any I/O -- everything is just
 pure in-memory strings.
 """
 
+import htmlmin
 import markdown
 from markdown.extensions.codehilite import CodeHiliteExtension
 from markdown.extensions.footnotes import FootnoteExtension
@@ -59,5 +60,5 @@ def convert_markdown(source, extra_extensions=None):
         extensions.extend(extra_extensions)
 
     md = markdown.Markdown(extensions=extensions)
-    html = md.convert(source)
+    html = htmlmin.minify(md.convert(source))
     return (html, md.Meta)
