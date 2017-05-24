@@ -1,1 +1,30 @@
-hello world
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title>{{ site.settings.name }}</title>
+  <link href="{{ site.settings.url }}feeds/all.atom.xml" rel="alternate"/>
+  <id>{{ site.settings.url }}feeds/all.atom.xml</id>
+  <updated>{{ updated_date }}</updated>
+
+  <author>
+    <name>{{ site.settings.author }}</name>
+    <email>{{ site.settings.author_email }}</email>
+  </author>
+
+  {% for post in posts %}
+  <entry>
+    <title><![CDATA[{{ post.metadata.title|safe }}]]></title>
+    <link href="{{ site.settings.url }}{{ post.metadata.url }}" rel="alternate"/>
+    <published>{{ post.metadata.date }}</published>
+    {% if 'date_updated' in post.metadata %}
+    <updated>{{ post.metadata.date_updated }}</updated>
+    {% endif %}
+    <id>{{ post.metadata.tag_uri }}</id>
+    {% if 'summary' in post.metadata %}
+    <summary type="html"><![CDATA[{{ post.metadata.summary|safe }}]]></summary>
+    {% endif %}
+    <content type="html"><![CDATA[{{ post.content|safe }}]]></content>
+  </entry>
+  {% endfor %}
+
+</feed>
