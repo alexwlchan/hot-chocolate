@@ -12,9 +12,8 @@ import sys
 
 import dateutil.parser as dp
 import htmlmin
-from feedgenerator import Atom1Feed, get_tag_uri
 
-from . import logging, markdown, plugins
+from . import feeds, logging, markdown, plugins
 from .css import load_base_css, minimal_css_for_html, optimize_css
 from .logging import info
 from .readers import list_page_files, list_post_files
@@ -85,7 +84,12 @@ class Site(NewSite):
 
         self.optimise_html()
 
-        self._build_feeds()
+        feeds.write_all_feeds(
+            output_dir=site.OUTPUT_DIR,
+            site=self,
+            posts=self.posts
+        )
+
         self._copy_static_files()
         self.write()
 
@@ -184,49 +188,6 @@ class Site(NewSite):
             site.pages.append(Page.from_file(path))
 
         return site
-
-    def _build_feeds(self):
-        feed_kwargs = {
-            'title': self.settings['name'],
-            'link': self.settings['url'] + '/feeds/all.atom.xml',
-            'description': self.settings['description'],
-            'author_name': self.settings['author'],
-            'author_email': self.settings['author_email'],
-        }
-        feed = Atom1Feed(**feed_kwargs)
-
-        for post in reversed(self.posts):
-            post_kwargs = {
-                'title': post.metadata['title'],
-                'link': self.settings['url'] + post.metadata['url'],
-                'pubdate': post.metadata['date'],
-                'content': post.content,
-            }
-            if post.metadata.get('link') is not None:
-                post_kwargs['link'] = post.metadata.get('link')
-            if 'summary' in post.metadata:
-                post_kwargs['description'] = post.metadata['summary']
-            else:
-                post_kwargs['description'] = post_kwargs['content']
-            post_kwargs['unique_id'] = get_tag_uri(post_kwargs['link'], post.metadata['date'])
-
-            if '<blockquote class="update">' in post.content:
-                update_strings = re.findall(
-                    r'Update, [0-9]+ [A-Z][a-z]+ [0-9]{4}', post.content
-                )
-                updated = max([
-                    datetime.strptime(u, 'Update, %d %B %Y')
-                    for u in update_strings
-                ])
-                post_kwargs['updateddate'] = updated
-
-            feed.add_item(**post_kwargs)
-
-        feed_dir = os.path.join(site.OUTPUT_DIR, 'feeds')
-        os.makedirs(feed_dir, exist_ok=True)
-        feed.write(
-            open(os.path.join(feed_dir, 'all.atom.xml'), 'w'),
-            encoding='utf-8')
 
     def _copy_static_files(self):
         for root, _, filenames in os.walk(os.path.join(self.path, 'static')):

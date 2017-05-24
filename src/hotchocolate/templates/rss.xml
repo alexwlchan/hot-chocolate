@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>{{ site.settings.name }}</title>
+    <link>{{ site.settings.url }}feeds/rss.xml</link>
+    <description>{{ site.settings.description }}</description>
+    <lastBuildDate>{{ updated_date|rfc822_date }}</lastBuildDate>
+    <atom:link href="{{ site.settings.url }}feeds/all.atom.xml" rel="self" type="application/rss+xml" />
+
+  {% for post in posts %}
+  <item>
+    <title><![CDATA[{{ post.metadata.title|safe }}]]></title>
+    <link>{{ site.settings.url }}{{ post.metadata.url }}</link>
+    <pubDate>{{ post.metadata.date|rfc822_date }}</pubDate>
+    <guid isPermaLink="true">{{ site.settings.url }}{{ post.metadata.url }}</guid>
+    <dc:creator>{{ site.settings.author }}</dc:creator>
+    <description><![CDATA[{{ post.content|safe }}]]></description>
+  </item>
+  {% endfor %}
+
+  </channel>
+</rss>

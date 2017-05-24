@@ -51,11 +51,8 @@ def get_feed_template(name):
         return env.get_template(name)
 
 
-def build_atom_feed(site, posts, max_posts=MAX_POSTS):
-    """
-    Given a list of posts, return a rendered Atom feed.
-    """
-    template = get_feed_template('atom.xml')
+def _build_feed(template_name, site, posts, max_posts):
+    template = get_feed_template(template_name)
     posts = sorted(posts, key=lambda p: p.metadata['date'], reverse=True)
     for post in posts:
         post.metadata['tag_uri'] = get_tag_uri(
@@ -65,6 +62,41 @@ def build_atom_feed(site, posts, max_posts=MAX_POSTS):
     atom_xml = template.render(
         site=site,
         posts=posts[:max_posts],
-        updated_date=str(datetime.now())
+        updated_date=datetime.now()
     )
     return utils.minify_xml(atom_xml.encode('utf8'))
+
+
+def build_atom_feed(site, posts, max_posts=MAX_POSTS):
+    """Given a list of posts, return a rendered Atom feed."""
+    return _build_feed(
+        template_name='atom.xml',
+        site=site,
+        posts=posts,
+        max_posts=max_posts
+    )
+
+
+def build_rss_feed(site, posts, max_posts=MAX_POSTS):
+    """Given a list of posts, return a rendered RSS feed."""
+    return _build_feed(
+        template_name='rss.xml',
+        site=site,
+        posts=posts,
+        max_posts=max_posts
+    )
+
+
+def write_all_feeds(output_dir, site, posts, max_posts=MAX_POSTS):
+    """Build and write the RSS, Atom and JSON feeds."""
+    feed_dir = os.path.join(output_dir, 'feeds')
+    os.makedirs(feed_dir, exist_ok=True)
+
+    atom_xml = build_atom_feed(site=site, posts=posts, max_posts=max_posts)
+    with open(os.path.join(feed_dir, 'all.atom.xml'), 'w') as f:
+        f.write(atom_xml)
+
+    rss_xml = build_rss_feed(site=site, posts=posts, max_posts=max_posts)
+    with open(os.path.join(feed_dir, 'rss.xml'), 'w') as f:
+        f.write(rss_xml)
+

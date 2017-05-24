@@ -17,6 +17,11 @@ def locale_date(date):
     return date.strftime('%d %B %Y').lstrip('0')
 
 
+def rfc822_date(date):
+    """Render a date in an RSS feed."""
+    return date.strftime('%a, %d %b %Y %H:%M:%S %z')
+
+
 def render_title(title):
     return md.convert_markdown(
         title,
@@ -37,5 +42,6 @@ def build_environment(template_dir=None):
     # TODO: Extension mechanism for additional filters?
     env.filters['locale_date'] = locale_date
     env.filters['title'] = render_title
+    env.filters['rfc822_date'] = rfc822_date
 
     return env
