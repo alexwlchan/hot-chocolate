@@ -35,18 +35,18 @@ def convert_markdown(source, extra_extensions=None):
 
     # Look for evidence of footnotes.
     if '[^' in source:
-        fn_extension = FootnoteExtension(configs={
+        fn_extension = FootnoteExtension(
             # We may show multiple documents with footnotes on an index
             # page.  Ensure footnote references are globally unique.
             # TODO: Make footnote numbering consistent over multiple
             # builds even when the set of pages/posts changes.
-            'UNIQUE_IDS': True,
+            UNIQUE_IDS=True,
 
             # Make sure that footnote markers are rendered as a text
             # arrow on iOS devices, not emoji.  For more info:
             # http://daringfireball.net/linked/2015/04/22/unicode-emoji
-            'BACKLINK_TEXT': '&#8617;&#xFE0E;',
-        })
+            BACKLINK_TEXT='&#8617;&#xFE0E;',
+        )
         extensions.append(fn_extension)
 
     if '```' in source:
