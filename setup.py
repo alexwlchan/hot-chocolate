@@ -39,8 +39,6 @@ setup(
         'beautifulsoup4>=4.6.0,<5',
         'click>=6.7,<7',
         'csscompressor>=0.9.4,<1',
-        'docker>=2.0.2,<3',
-        'feedgenerator>=1.9,<2',
         'htmlmin>=0.1.10,<0.2',
         'python-dateutil>=2.6.0,<3',
         'Jinja2>=2.9.5,<3',
