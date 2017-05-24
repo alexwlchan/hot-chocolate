@@ -51,11 +51,12 @@ def get_feed_template(name):
         return env.get_template(name)
 
 
-def build_atom_feed(site, posts):
+def build_atom_feed(site, posts, max_posts=MAX_POSTS):
     """
     Given a list of posts, return a rendered Atom feed.
     """
     template = get_feed_template('atom.xml')
+    posts = sorted(posts, key=lambda p: p.metadata['date'], reverse=True)
     for post in posts:
         post.metadata['tag_uri'] = get_tag_uri(
             url=site.settings['url'] + post.metadata['slug'],
@@ -63,7 +64,7 @@ def build_atom_feed(site, posts):
         )
     atom_xml = template.render(
         site=site,
-        posts=posts[:MAX_POSTS],
+        posts=posts[:max_posts],
         updated_date=str(datetime.now())
     )
     return utils.minify_xml(atom_xml.encode('utf8'))

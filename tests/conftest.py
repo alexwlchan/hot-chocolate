@@ -6,6 +6,8 @@ from markdown import Extension
 from markdown.preprocessors import Preprocessor
 import pytest
 
+from hotchocolate import Post
+
 
 class EmptyPreprocessor(Preprocessor):
     """
@@ -50,3 +52,15 @@ def settings_dict():
         'description': 'An example website',
         'language': 'en',
     }
+
+
+@pytest.fixture
+def example_post():
+    return Post(
+        path='/dev/null',
+        content='A post about greeting the entire globe',
+        metadata={
+            'date': '2016-07-21',
+            'title': 'Hello world'
+        }
+    )
