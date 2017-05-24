@@ -36,7 +36,6 @@ def get_tag_uri(url, date):
     return 'tag:%s%s:%s%s' % (bits.hostname, d, bits.path, fragment)
 
 
-
 def get_feed_template(name):
     """
     Load a template for an XML feed.  If one isn't available in the standard
