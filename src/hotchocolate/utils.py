@@ -12,7 +12,7 @@ from unidecode import unidecode
 
 def slugify(u):
     """Convert Unicode string into blog slug."""
-    # http://www.leancrew.com/all-this/2014/10/asciifying/
+    # Based on http://www.leancrew.com/all-this/2014/10/asciifying/
     u = re.sub(u'[–—/:;,.]', '-', u)   # replace separating punctuation
     a = unidecode(u).lower()           # best ASCII substitutions, lowercased
     a = re.sub(r'[^a-z0-9 -]', '', a)  # delete any other characters
@@ -21,12 +21,12 @@ def slugify(u):
     return a
 
 
-def chunks(l, n):
+def chunks(l, chunk_size):
     """Yield successive n-sized chunks from l."""
     # http://stackoverflow.com/a/312464/1558022
-    # Note: this only works if we know hte length of ``l``.
-    for i in range(0, len(l), n):
-        yield l[i:i + n]
+    # Note: this only works if we know the length of ``l``.
+    for i in range(0, len(l), chunk_size):
+        yield l[i:i + chunk_size]
 
 
 def lazy_copyfile(src, dst):
