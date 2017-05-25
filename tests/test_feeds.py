@@ -55,24 +55,7 @@ def test_optional_tags_are_omitted_by_default(settings_dict, example_post):
         site=site,
         posts=[example_post]
     )
-
-    # There's an <updated> tag at the top of the feed, but we don't want
-    # it in the entries.
-    assert feed_xml.count('<updated>') == 1
-
     assert '</summary>' not in feed_xml
-
-
-def test_updated_date_is_included(settings_dict, example_post):
-    site = Site(settings=settings_dict)
-    example_post.metadata['date_updated'] = '2016-07-22'
-    feed_xml = feeds.build_atom_feed(
-        site=site,
-        posts=[example_post]
-    )
-
-    # Once at the top of the feed, once in the entry.
-    assert feed_xml.count('<updated>') == 2
 
 
 def test_summary_is_included(settings_dict, example_post):
