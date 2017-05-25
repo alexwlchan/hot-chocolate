@@ -4,6 +4,7 @@ Provides template utilities.
 """
 
 import jinja2
+import pytz
 
 from . import markdown as md, plugins
 
@@ -15,6 +16,21 @@ TEMPLATE_DIR = 'templates'
 def locale_date(date):
     """Render a date in the current locale date."""
     return date.strftime('%d %B %Y').lstrip('0')
+
+
+def rfc822_date(date):
+    """Render a date according to RFC-822 (for an RSS feed)."""
+    # TODO: Only localize if the timezone is naive
+    date = pytz.timezone('Europe/London').localize(date)
+    return date.strftime('%a, %d %b %Y %H:%M:%S %z')
+
+
+def rfc3339_date(date):
+    """Render a date according to RFC-3339 (for an Atom feed)."""
+    # TODO: Only localize if the timezone is naive
+    date = pytz.timezone('Europe/London').localize(date)
+    s = date.strftime('%Y-%m-%dT%H:%M:%S%z')
+    return s[:-2] + ':' + s[-2:]
 
 
 def render_title(title):
@@ -37,5 +53,7 @@ def build_environment(template_dir=None):
     # TODO: Extension mechanism for additional filters?
     env.filters['locale_date'] = locale_date
     env.filters['title'] = render_title
+    env.filters['rfc822_date'] = rfc822_date
+    env.filters['rfc3339_date'] = rfc3339_date
 
     return env
