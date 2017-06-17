@@ -16,6 +16,13 @@ def test_locale_date(date, date_string):
     assert templates.locale_date(date) == date_string
 
 
+@pytest.mark.parametrize('title, expected', [
+    ('Review: Foo Bar', 'Review: Foo Bar'),
+])
+def test_render_title(title, expected):
+    assert templates.render_title(title) == expected
+
+
 def test_environment_is_right_type():
     assert isinstance(templates.build_environment(), Environment)
 

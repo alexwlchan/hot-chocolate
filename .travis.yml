@@ -3,6 +3,10 @@ sudo: false
 
 cache: pip
 
+branches:
+  only:
+    - master
+
 matrix:
   include:
     - python: 3.6

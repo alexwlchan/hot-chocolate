@@ -15,7 +15,7 @@ from markdown.extensions.meta import MetaExtension
 from markdown.extensions.smarty import SmartyExtension
 
 
-def convert_markdown(source, extra_extensions=None):
+def convert_markdown(source, extra_extensions=None, parse_metadata=True):
     """
     Convert a Markdown string into HTML.  Returns an (HTML, metadata) tuple.
 
@@ -25,13 +25,17 @@ def convert_markdown(source, extra_extensions=None):
 
     :param source: Markdown source.
     :param extra_extensions: (optional) A list of Extensions to use.
+    :param parse_metadata: (optional) Should we parse metadata in the string?
 
     """
     # Rather than load all the extensions every time, we load only the
     # extensions required for the given source.  Informal testing in the old
     # implementation suggested this made a difference.
     # TODO: Is this still required?
-    extensions = [SmartyExtension(), MetaExtension()]
+    extensions = [SmartyExtension()]
+
+    if parse_metadata:
+        extensions.append(MetaExtension())
 
     # Look for evidence of footnotes.
     if '[^' in source:
@@ -60,4 +64,8 @@ def convert_markdown(source, extra_extensions=None):
 
     md = markdown.Markdown(extensions=extensions)
     html = md.convert(source)
-    return (html, md.Meta)
+
+    if parse_metadata:
+        return (html, md.Meta)
+    else:
+        return html
