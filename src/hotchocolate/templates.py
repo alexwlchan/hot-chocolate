@@ -20,8 +20,9 @@ def locale_date(date):
 def render_title(title):
     return md.convert_markdown(
         title,
-        extra_extensions=plugins.load_markdown_extensions()
-    )[0].replace('<p>', '').replace('</p>', '')
+        extra_extensions=plugins.load_markdown_extensions(),
+        parse_metadata=False
+    ).replace('<p>', '').replace('</p>', '')
 
 
 def build_environment(template_dir=None):
