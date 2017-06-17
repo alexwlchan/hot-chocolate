@@ -1,6 +1,14 @@
 Release History
 ===============
 
+3.0.1 (2017-06-17)
+------------------
+
+A release with a single bugfix:
+
+-  If a title contained a colon, it wouldn't show up on a post.  Now it shows
+   up correctly.
+
 3.0.0 (2017-05-21)
 ------------------
 

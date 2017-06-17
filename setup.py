@@ -18,7 +18,7 @@ long_description = codecs.open(README, encoding='utf-8').read()
 
 setup(
     name='hotchocolate',
-    version='3.0.0',
+    version='3.0.1',
     description='A static site generator designed for lightweight sites',
     long_description=long_description,
     url='https://github.com/alexwlchan/hot-chocolate',
