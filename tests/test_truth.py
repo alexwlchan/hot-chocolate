@@ -1,0 +1,9 @@
+from hotchocolate import __version__
+
+
+def test_version():
+    assert __version__ == "2023.1"
+
+
+def test_truth():
+    assert True
