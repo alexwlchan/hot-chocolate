@@ -1,0 +1,62 @@
+[build-system]
+requires = [
+    "setuptools >= 65",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hotchocolate"
+authors = [
+  {name = "Alex Chan", email="alex@alexwlchan.net"},
+]
+requires-python = ">=3.12"
+dynamic = ["dependencies", "version"]
+
+[project.urls]
+"Homepage" = "https://github.com/alexwlchan/hot-chocolate"
+
+[project.scripts]
+hotchocolate = "hotchocolate.cli:main"
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+version = {attr = "hotchocolate.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+hotchocolate = ["static/*", "templates/*"]
+
+[tool.coverage.run]
+branch = true
+source = [
+  "hotchocolate",
+  "tests",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 100
+
+[tool.pytest.ini_options]
+filterwarnings = ["error"]
+
+[tool.mypy]
+mypy_path = "src"
+check_untyped_defs = true
+disallow_any_generics = true
+disallow_incomplete_defs = true
+disallow_subclassing_any = true
+disallow_untyped_calls = true
+disallow_untyped_decorators = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+no_implicit_reexport = true
+show_error_codes = true
+strict_equality = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unused_configs = true
+warn_unused_ignores = true
