@@ -1,3 +1,0 @@
-include src/hotchocolate/settings.toml
-recursive-include src/hotchocolate/styles *
-recursive-include src/hotchocolate/templates *
